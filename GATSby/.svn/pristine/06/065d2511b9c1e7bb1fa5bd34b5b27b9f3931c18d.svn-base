@@ -1,0 +1,209 @@
+/**
+ * WishartDistribution
+    Copyright (C) 2014  Sarah E. Heaps
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    Contact the author at:  <sarah.heaps@ncl.ac.uk>
+ */
+
+package simulation;
+
+/**
+ * Wishart distribution.
+ *
+ */
+
+import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
+import cern.jet.random.tdouble.Normal;
+import cern.jet.random.tdouble.engine.DoubleMersenneTwister;
+import treebase.AlgorithmException;
+import cern.jet.random.tdouble.ChiSquare;
+
+public class WishartDistribution implements java.io.Serializable, RandomEngineSeedSetter {
+    
+    /** Version number for serialization - increment when structural changes are made */
+    private static final long serialVersionUID = 0L;
+
+    /* Data */
+    private final int dimension;
+    private int dof;
+    private MultivariateNormalDistribution.SymmetricPositiveDefiniteMatrix scale;
+    private Normal normObject;
+    private ChiSquare chisqObject;
+    private DenseDoubleMatrix2D workingMatrix, workingMatrix2, workingMatrix3;
+    private double[][] workingArray;
+    private double logNormalisingConstant;
+    private boolean performChecks;
+    
+    public WishartDistribution(int nu, double[][] scaleMat, boolean performChecks) throws AlgorithmException {
+        this(nu, scaleMat, performChecks, Random.getEngine());
+    }
+    
+    public WishartDistribution(int nu, double[][] scaleMat, boolean performChecks, int seed) throws AlgorithmException {
+        this(nu, scaleMat, performChecks, new DoubleMersenneTwister(seed));
+    }
+    
+    public WishartDistribution(int nu, double[][] scaleMat, boolean performChecks, DoubleMersenneTwister randomEngine) throws AlgorithmException {
+        dimension = scaleMat.length;
+        if(nu <= dimension - 1) throw new AlgorithmException("Degree of freedom parameter"
+                + " has to exceed n-1.");
+        dof = nu;
+        scale = new MultivariateNormalDistribution.SymmetricPositiveDefiniteMatrix(scaleMat, performChecks);
+        workingMatrix = new DenseDoubleMatrix2D(dimension, dimension);
+        workingMatrix2 = new DenseDoubleMatrix2D(dimension, dimension);
+        workingMatrix3 = new DenseDoubleMatrix2D(dimension, dimension);
+        workingArray = new double[dimension][dimension];
+        normObject = new Normal(0.0, 1.0, randomEngine);
+        chisqObject = new ChiSquare(1.0, randomEngine);
+        computeLogNormalisingConstant();
+        this.performChecks = performChecks;
+    }
+
+    private void computeLogNormalisingConstant() throws AlgorithmException {
+        logNormalisingConstant = -0.5*dimension*dof*Math.log(2.0)-0.25*dimension*(dimension-1)*Math.log(Math.PI);
+        for(int i=1; i<=dimension; i++) {
+            logNormalisingConstant -= cern.jet.stat.tdouble.Gamma.logGamma(0.5*(dof+1-i));
+        }
+        logNormalisingConstant -= 0.5*dof*scale.getLogDeterminant();
+    }
+    
+    public void resetRandomEngineSeed() {
+        normObject = new Normal(0.0, 1.0, Random.getEngine());
+        chisqObject = new ChiSquare(1.0, Random.getEngine());
+    }
+    
+    public int getDimension() {
+        return dimension;
+    }
+    
+    public int getDegreesOfFreedom() {
+        return dof;
+    }
+    
+    public double[][] getScaleMatrix() {
+        return scale.getMatrix();
+    }
+    
+    public void setDegreesOfFreedom(int nu) throws AlgorithmException {
+        if(performChecks && nu < dimension) throw new AlgorithmException("Degree of freedom parameter"
+                + " has to be at least n.");
+        dof = nu;
+        computeLogNormalisingConstant();
+    }
+    
+    public void setScaleMatrix(double[][] scaleMat) throws AlgorithmException {
+        scale.setMatrix(scaleMat);
+        computeLogNormalisingConstant();
+    }
+    
+    // Sampling algorithm from Multivariate Statistical Simulation by Mark E. Johnson, p 202 - 203
+    private void sampleInternal() {
+        for(int i=0; i<dimension; i++) {
+             for(int j=0; j<dimension; j++) {
+                 if(i>j) workingMatrix.set(i, j, normObject.nextDouble());
+                 else if(i==j) workingMatrix.set(i, j, Math.sqrt(chisqObject.nextDouble(dof - i)));
+                 else workingMatrix.set(i, j, 0.0); // T
+             }
+         }
+         scale.getLowerTriangle(workingMatrix2); // L
+         workingMatrix2.zMult(workingMatrix, workingMatrix3);
+    }
+    
+    public double[][] sampleArray() {
+         sampleInternal();
+         return (workingMatrix3.zMult(workingMatrix3, null, 1.0, 0.0, false, true)).toArray();
+    }
+
+    public MultivariateNormalDistribution.SymmetricPositiveDefiniteMatrix sampleMatrix() throws AlgorithmException {
+         sampleInternal();
+         return new MultivariateNormalDistribution.SymmetricPositiveDefiniteMatrix((DenseDoubleMatrix2D)workingMatrix3.zMult(workingMatrix3, null, 1.0, 0.0, false, true), performChecks);
+    }
+    
+    public double logpdf(double[][] x) throws AlgorithmException {
+        return logpdf(new MultivariateNormalDistribution.SymmetricPositiveDefiniteMatrix(x, performChecks));
+    }
+    
+    public double logpdf(MultivariateNormalDistribution.SymmetricPositiveDefiniteMatrix x) throws AlgorithmException {
+        double l = logNormalisingConstant;
+        scale.solve(x.theMatrix, workingArray);
+        double trace = 0.0;
+        for(int i=0; i<dimension; i++) trace += workingArray[i][i];
+        l += -0.5*trace + 0.5*(dof-dimension-1)*x.getLogDeterminant();
+        return l;
+    }
+    
+    public double pdf(double[][] x) throws AlgorithmException {
+        return pdf(new MultivariateNormalDistribution.SymmetricPositiveDefiniteMatrix(x, performChecks));
+    }
+    
+    public double pdf(MultivariateNormalDistribution.SymmetricPositiveDefiniteMatrix x) throws AlgorithmException {
+        return Math.exp(logpdf(x));
+    }
+    
+    public static void main(String[] args) throws AlgorithmException {
+        
+        double[][] scaleMat = {{13.89,  2.33,  1.49, 3.42},
+            {2.33, 12.99,  1.01, 0.06},
+                {1.49, 1.01, 16.32, 0.03},
+                {3.42, 0.06, 0.03, 8.38}};
+        int nu = 4;
+        WishartDistribution wish = new WishartDistribution(nu, scaleMat, true);
+        
+        double[][] x = {{5.52, -0.18, 1.65, -0.47},
+            {-0.18, 7.89, -0.61, 0.21},
+            {1.65, -0.61, 13.01, 2.18},
+            {-0.47, 0.21, 2.18, 5.57}};
+        System.out.println(wish.logpdf(x));
+        
+        wish.setDegreesOfFreedom(10);
+        System.out.println(wish.logpdf(x));
+        
+        wish.setScaleMatrix(x);
+        System.out.println(wish.logpdf(scaleMat));
+        
+        /*double[][] x;
+        for(int i=0; i<100000; i++) {
+            wish.setScaleMatrix(scaleMat);
+            x = wish.sampleArray();
+            for(int j=0; j<scaleMat.length; j++) {
+                for(int k=0; k<scaleMat.length; k++) {
+                    System.out.print(x[j][k]+" ");
+                }
+            }
+            System.out.println();
+        }*/
+        
+        
+    }
+    
+    /*
+    library(gtools)
+    s = matrix(c(13.89,  2.33,  1.49, 3.42, 2.33, 12.99,  1.01, 0.06, 1.49, 1.01, 16.32, 0.03, 3.42, 0.06, 0.03, 8.38), 4, 4, byrow=T)
+    x = matrix(c(5.52, -0.18, 1.65, -0.47, -0.18, 7.89, -0.61, 0.21, 1.65, -0.61, 13.01, 2.18, -0.47, 0.21, 2.18, 5.57), 4, 4, byrow=T)
+    nu = 4
+    log(dwish(x, nu, s))
+    log(dwish(x, 10, s))
+    log(dwish(s, 10, x))
+    res = matrix(NA, 100000, 16)
+    for(i in 1:100000) {
+        res[i,] = as.numeric(rwish(nu, s))
+    }
+    par(mfrow=c(2,2),ask=T)
+    for(i in 1:16) {
+        plot(density(res[,i]),type="l",col=2)
+        lines(density(resJ[,i]),col=3)
+    }
+    */
+}

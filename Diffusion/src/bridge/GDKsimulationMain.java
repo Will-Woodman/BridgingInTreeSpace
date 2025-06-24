@@ -1,0 +1,144 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
+ */
+
+
+package bridge;
+import topologies.*;
+import MCMC.PosteriorAnalysis;
+import java.io.File;
+import static MCMC.PosteriorAnalysis.extractTreesFromOutputFile;
+import static MCMC.PosteriorAnalysis.outputEdgeLengthsForModalTopology;
+import static MCMC.PosteriorAnalysis.countTopologiesAtPoints;
+import static bridge.TreeDistributions.sampleExponentialBump;
+import static bridge.TreeDistributions.sampleExponentialBumpViaMVNStep;
+import cern.jet.random.tdouble.DoubleUniform;
+import geodesics.Geodesic;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import treebase.TreeAsSplits;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import simulation.NormalDistribution;
+import simulation.Random;
+import treebase.AlgorithmError;
+import treebase.AlgorithmException;
+import treebase.Tree;
+
+/**
+ *
+ * @author will
+ */
+public class GDKsimulationMain {
+
+    /**
+     Main file to simulate from the Gaussian kernel distribution by MCMC using the
+     * sampleExponentialBumpViaMVNStep class
+     */
+    public static void main(String[] args) throws IOException, AlgorithmError, AlgorithmException {
+        
+        int seed =4000;
+        Random.setEngine(seed);
+        
+        //Tree x0 the 'centre' of the distribution
+        String initialTreeFilename = "/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/MarginalLikelihoods/10Taxa/SourceTree1.txt";
+        
+        String outputFilename = "/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/GKDSims20231009/10Taxa/Try4.txt";
+        //output file with just topologies
+        String outputFilenameTops = "/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/GKDSims20231009/10Taxa/Try4Tops.txt";
+        //output file with the distances of the sampled points to x0
+        String outputFilenameDist = "/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/GKDSims20231009/10Taxa/Try4Dists.txt";
+        
+   
+        File outFile = new File(outputFilename);
+        File outFileTops = new File(outputFilenameTops);
+        File outFileDist = new File(outputFilenameDist);
+        
+        
+        /* Read in an initial tree */
+        
+        Tree initialTree = null;
+        try {
+            initialTree = new Tree(new File(initialTreeFilename));
+            initialTree.removeDegreeTwoVertices();
+        }
+        catch (AlgorithmException anError) {
+            System.out.println("Bad initial tree. "+anError.getMessage());
+            System.exit(1);
+        }
+        TreeAsSplits x0 = new TreeAsSplits(initialTree);
+        
+        //value for t0:
+        double r = 0.1;
+        // value for the proposal distribution which is a random walk proposal
+        double sd = 0.09;
+        //parameters for the MCMC
+        int burnits = 10000, thin = 100, nits = 3000000;
+        NormalDistribution normDist = new NormalDistribution(0.0, sd);
+        DoubleUniform unifDist = new DoubleUniform(simulation.Random.getEngine());
+        boolean[] CBound = new boolean[1];
+       
+       //run the sampler 
+        ArrayList<TreeAsSplits> sample = sampleExponentialBumpViaMVNStep(x0, r, sd, burnits, thin, nits, normDist, unifDist,CBound);
+       
+        //print the tree sample
+        PrintWriter out;
+         if (outFile==null) {
+             out = new PrintWriter(System.out);
+         }
+         else {
+             try {
+                 out = new PrintWriter(new BufferedWriter(new FileWriter(outFile, false)));
+             }
+             catch (java.io.IOException anErr) {
+                 System.out.println("Warning: output to file "+outFile.getName()+" failed: "
+                         +"writing output to console instead.");
+                 out = new PrintWriter(System.out);
+             }
+         }
+         
+         //print the sampled trees
+         for (int i=1; i<sample.size(); i++) {
+            TreeAsSplits nextTree = sample.get(i);
+            out.println(nextTree.toString(true));
+        }
+         
+        out.close();
+        
+       
+        //print the distances of the sample points from x0
+        PrintWriter out2;
+         if (outFileDist==null) {
+             out2 = new PrintWriter(System.out);
+         }
+         else {
+             try {
+                 out2 = new PrintWriter(new BufferedWriter(new FileWriter(outFileDist, false)));
+             }
+             catch (java.io.IOException anErr) {
+                 System.out.println("Warning: output to file "+outFile.getName()+" failed: "
+                         +"writing output to console instead.");
+                 out2 = new PrintWriter(System.out);
+             }
+         }
+         
+        //print out the distances between the source parameter x0 and the sampled points
+        for (int i=1; i<sample.size(); i++) {
+            Geodesic h = new Geodesic(sample.get(i), x0);
+            out2.println(String.format("%7.7f", h.getInternalLength()));
+        }
+        
+        out2.close();
+
+        //print out the frequencies of the topologies in sample
+       PosteriorAnalysis.countTopologiesToFile(sample, outFileTops);
+      
+        
+    }
+       
+    
+}

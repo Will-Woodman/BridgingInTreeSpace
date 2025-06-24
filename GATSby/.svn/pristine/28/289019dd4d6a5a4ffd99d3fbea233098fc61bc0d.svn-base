@@ -1,0 +1,67 @@
+/*
+ * CharacterizeTopologies.java
+
+    Copyright (C) 2016  Tom M. W. Nye
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    Contact the author at:  <tom.nye@ncl.ac.uk>
+                            <http://www.mas.ncl.ac.uk/~ntmwn/>
+ */
+
+package treedatasets;
+
+import java.util.ArrayList;
+import treebase.TreeAsSplits;
+
+/**
+ * Take an array of trees and find all the topologies
+ */
+
+public class CharacterizeTopologies {
+    
+    public static int[] identifyDifferentTopologies(ArrayList<TreeAsSplits> theTrees, ArrayList<String> outputTopologies) {
+        
+        int[] topologyIndex = new int[theTrees.size()];
+        ArrayList<TreeAsSplits> topologies = new ArrayList();
+        
+        topologies.add(theTrees.get(0));
+        outputTopologies.add(theTrees.get(0).toString(false));
+        topologyIndex[0] = 0;
+        
+        for (int i=1; i<theTrees.size(); i++) {
+            
+            int ind = -1;
+            TreeAsSplits t = theTrees.get(i);
+            for (int j=0; j<topologies.size(); j++) {
+                if (t.matchesTopology(topologies.get(j))) {
+                    ind = j;
+                }
+            }
+            if (ind<0) {
+                // New topology
+                topologyIndex[i] = topologies.size();
+                topologies.add(t);
+                outputTopologies.add(t.toString(false));
+            }
+            else {
+                // Existing topology
+                topologyIndex[i] = ind;
+            }
+        }
+        
+        return topologyIndex;
+    }
+    
+}
