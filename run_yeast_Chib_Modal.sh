@@ -26,7 +26,7 @@ args=(
         $props_filename # output file for the proposals
         )
         
-java -cp "/home/c1032934/Documents/Netbeans/BridgingInTreeSpace/dist/BridgingInTreeSpace.jar" MarginalLikelihoods/ChibSampler "${args[@]}"
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoods/ChibSampler "${args[@]}"
 
 #calculate the estimates
 args=(
@@ -34,9 +34,9 @@ args=(
 	$posterior_filename
 )
 
-java -cp "/home/c1032934/Documents/Netbeans/BridgingInTreeSpace/dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/ChibJeliEstimate "${args[@]}"  >> /home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/ChibJeliEstTest.txt #replace with file name for storing the Chib estimate
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/ChibJeliEstimate "${args[@]}"  >> /home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/ChibJeliEstTest.txt #replace with file name for storing the Chib estimate
 
-java -cp "/home/c1032934/Documents/Netbeans/BridgingInTreeSpace/dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/BridgeSamplingEstimate "${args[@]}"  >> /home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/TunnelEstTest.txt #replace with file name for storing the tunnel estimate
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/BridgeSamplingEstimate "${args[@]}"  >> /home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/TunnelEstTest.txt #replace with file name for storing the tunnel estimate
 
 
 

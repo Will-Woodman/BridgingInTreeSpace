@@ -14,7 +14,7 @@ args=(
 	$frechet_distances_filename
 )
 
-java -cp "/home/c1032934/Documents/Netbeans/BridgingInTreeSpace/dist/BridgingInTreeSpace.jar" simulateTops/FrechetMeanMainClass "${args[@]}"
+java -cp "./dist/BridgingInTreeSpace.jar" simulateTops/FrechetMeanMainClass "${args[@]}"
 
 #Run the MCMC:
 args=(

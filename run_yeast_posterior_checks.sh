@@ -16,7 +16,7 @@ args=(
         $numSamples
         )
  
-java -cp "/home/c1032934/Documents/Netbeans/BridgingInTreeSpace/dist/BridgingInTreeSpace.jar" simulateTops/GGFRWYeast "${args[@]}"
+java -cp "./dist/BridgingInTreeSpace.jar" simulateTops/GGFRWYeast "${args[@]}"
 
 #now get the distances between the source tree and the simulated particles
 args=(
@@ -25,4 +25,4 @@ args=(
         $distance_filename  #file for outputting the distances
         )
 
-java -cp "/home/c1032934/Documents/Netbeans/BridgingInTreeSpace/dist/BridgingInTreeSpace.jar" simulateTops/RobinsonFouldsDataSet "${args[@]}"
+java -cp "./dist/BridgingInTreeSpace.jar" simulateTops/RobinsonFouldsDataSet "${args[@]}"

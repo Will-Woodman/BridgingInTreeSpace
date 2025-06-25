@@ -7,4 +7,4 @@ args=(
         $data_filename # data file name
         )
  
-java -cp "/home/c1032934/Documents/Netbeans/BridgingInTreeSpace/dist/BridgingInTreeSpace.jar" MarginalLikelihoods/ExactMLStarTree "${args[@]}" >> $output_filename
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoods/ExactMLStarTree "${args[@]}" >> $output_filename

@@ -25,6 +25,6 @@ args=(
 	"0.1" # parameter for t0 random walk poposal
 )
 
-java -cp "/home/c1032934/Documents/Netbeans/BridgingInTreeSpace/dist/BridgingInTreeSpace.jar" bridge/InferBrownianParamsMCMC "${args[@]}"
+java -cp "./dist/BridgingInTreeSpace.jar" bridge/InferBrownianParamsMCMC "${args[@]}"
 
 

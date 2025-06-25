@@ -26,10 +26,10 @@ args=(
         ) 
         
 
-java -cp "/home/c1032934/Documents/Netbeans/BridgingInTreeSpace/dist/BridgingInTreeSpace.jar" MarginalLikelihoods/SteppingStoneSampler "${args[@]}"
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoods/SteppingStoneSampler "${args[@]}"
 
 args=(
  	$posterior_filename
  	)
         
-java -cp "/home/c1032934/Documents/Netbeans/BridgingInTreeSpace/dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/StepStoneEstimate "${args[@]}" >> /home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/StepStoneEstTest.txt #replace with file name for storing the Chib estimate
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/StepStoneEstimate "${args[@]}" >> /home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/StepStoneEstTest.txt #replace with file name for storing the Chib estimate
