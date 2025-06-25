@@ -1,8 +1,8 @@
 #!/bin/bash
 ##filenames
-data_filename="/home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/yeast_new_ints.txt" # x0 tree filename
-frechet_params_filename="/home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/yeast_new_ints_FM_0624test.txt"
-output_filename="/home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/yeast_new_ints_MCMC0_FM_justdisp_624test.txt"
+data_filename="./YeastData/yeast_new_ints.txt" # x0 tree filename
+frechet_params_filename="./YeastData/yeast_new_ints_FM_0624test.txt"
+output_filename="./YeastData/yeast_new_ints_MCMC0_FM_justdisp_624test.txt"
 
 #Run the MCMC:
 args=(

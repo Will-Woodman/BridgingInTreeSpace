@@ -1,7 +1,7 @@
 #!/bin/bash
-source_tree_filename="/home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/yeast_new_ints_MCMCOutv2_splitModes_Tree.txt" # source tree filename
-output_filename="/home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/yeast_new_ints_forward_sim_trees_test.txt" # data filename
-distance_filename="/home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/yeast_new_ints_forward_sim_dists_test.txt" # data filename
+source_tree_filename="./YeastData/yeast_new_ints_MCMCOutv2_splitModes_Tree.txt" # source tree filename
+output_filename="./YeastData/yeast_new_ints_forward_sim_trees_test.txt" # data filename
+distance_filename="./YeastData/yeast_new_ints_forward_sim_dists_test.txt" # data filename
 seed="1324" #seed for running the random simulations
 m=50 #number of steps
 disp=0.0169 #dispersion to use for the random walks

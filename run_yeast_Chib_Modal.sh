@@ -1,8 +1,8 @@
 #!/bin/bash
  
- data_filename="/home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/yeast_new_ints.txt" # x0 tree filename
- source_tree_filename="/home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/yeast_new_ints_MCMCOutv2_splitModes_Tree.txt" # data filename
- posterior_filename="/data/ww24/ExperimentalData/EightYeast/yeast_new_ints_MCMCOutv2_splitModes_Tree_ChibJeliPostv2_test0624.txt" # output filename for the samples from the posterior
+ data_filename="./YeastData/yeast_new_ints.txt" # x0 tree filename
+ source_tree_filename="./YeastData/yeast_new_ints_MCMCOutv2_splitModes_Tree.txt" # data filename
+ posterior_filename="./YeastData/yeast_new_ints_MCMCOutv2_splitModes_Tree_ChibJeliPostv2_test0624.txt" # output filename for the samples from the posterior
 
 #run the MCMC and independence proposals
 args=(
@@ -34,9 +34,9 @@ args=(
 	$posterior_filename
 )
 
-java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/ChibJeliEstimate "${args[@]}"  >> /home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/ChibJeliEstTest.txt #replace with file name for storing the Chib estimate
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/ChibJeliEstimate "${args[@]}"  >> ./YeastData/ChibJeliEstTest.txt #replace with file name for storing the Chib estimate
 
-java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/BridgeSamplingEstimate "${args[@]}"  >> /home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/TunnelEstTest.txt #replace with file name for storing the tunnel estimate
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/BridgeSamplingEstimate "${args[@]}"  >> ./YeastData/TunnelEstTest.txt #replace with file name for storing the tunnel estimate
 
 
 

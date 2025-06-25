@@ -1,8 +1,8 @@
 #!/bin/bash
  
- data_filename="/home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/yeast_new_ints.txt" # x0 tree filename
- source_tree_filename="/home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/yeast_new_ints_FM_OP.txt" # data filename
- posterior_filename="/data/ww24/ExperimentalData/EightYeast/yeast_new_ints_FM_OP_StepStone_test0624" # output file for the posterior
+ data_filename="./YeastData/yeast_new_ints.txt" # x0 tree filename
+ source_tree_filename="./YeastData/yeast_new_ints_FM_OP.txt" # data filename
+ posterior_filename="./YeastData/yeast_new_ints_FM_OP_StepStone_test0624" # output file for the posterior
 
 
 args=(
@@ -32,4 +32,4 @@ args=(
  	$posterior_filename
  	)
         
-java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/StepStoneEstimate "${args[@]}" >> /home/c1032934/Documents/Netbeans/TopInf20240503/ExperimentalData/EightYeast/StepStoneEstTest.txt #replace with file name for storing the Chib estimate
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/StepStoneEstimate "${args[@]}" >> ./YeastData/StepStoneEstTest.txt #replace with file name for storing the Chib estimate
