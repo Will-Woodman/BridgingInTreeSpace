@@ -40,7 +40,7 @@ args=(
 	"0.9"    
 )
 
-java -cp "/home/c1032934/Documents/Netbeans/BridgingInTreeSpace/dist/BridgingInTreeSpace.jar" bridge/InferBrownianParamsMCMC "${args[@]}"
+java -cp "./dist/BridgingInTreeSpace.jar" bridge/InferBrownianParamsMCMC "${args[@]}"
 
 ##Count the topologies in the posterior
 args=(
@@ -48,7 +48,7 @@ args=(
 	$topologies_filename #TopologiesFilename
         )
         
-java -cp "/home/c1032934/Documents/Netbeans/BridgingInTreeSpace/dist/BridgingInTreeSpace.jar" topologies/countTopologiesAtPoints "${args[@]}"
+java -cp "./dist/BridgingInTreeSpace.jar" topologies/countTopologiesAtPoints "${args[@]}"
 
 #Get the edge lengths in the modal topology in the posterior:
 args=(
@@ -56,7 +56,7 @@ args=(
 	$modal_top_edges_filename #EdgesFilename
         )
         
-java -cp "/home/c1032934/Documents/Netbeans/BridgingInTreeSpace/dist/BridgingInTreeSpace.jar" topologies/edgeLengthsModalTop "${args[@]}"
+java -cp "./dist/BridgingInTreeSpace.jar" topologies/edgeLengthsModalTop "${args[@]}"
 
 
 
