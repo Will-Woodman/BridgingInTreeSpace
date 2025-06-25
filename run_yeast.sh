@@ -1,11 +1,11 @@
 #!/bin/bash
 ##filenames
 data_filename="./YeastData/yeast_new_ints.txt" # x0 tree filename
-frechet_params_filename="./YeastData/yeast_new_ints_FM_0624test.txt"
-frechet_distances_filename="./YeastData/yeast_new_ints_FM_distances_0624test.txt"
-output_filename="./YeastData/yeast_new_ints_MCMC0624test.txt"
-topologies_filename="./YeastData/yeast_new_ints_MCMC0624test_tops.txt"
-modal_top_edges_filename="./YeastData/yeast_new_ints_MCMC0624test_edges.txt"
+frechet_params_filename="./YeastData/yeast_new_ints_FM.txt"
+frechet_distances_filename="./YeastData/yeast_new_ints_FM_distances.txt"
+output_filename="./YeastData/yeast_new_ints_MCMCOutput.txt"
+topologies_filename="./YeastData/yeast_new_ints_MCMCOutput_tops.txt"
+modal_top_edges_filename="./YeastData/yeast_new_ints_MCMCOutput_edges.txt"
 
 #Initially estimate the Frechet mean:
 args=(
