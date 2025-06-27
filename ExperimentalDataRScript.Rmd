@@ -1,0 +1,338 @@
+---
+title: "YeastData"
+author: "William M. Woodman"
+date: "2025-06-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+knitr::opts_knit$set(root.dir = "/Users/will/Documents/BridgingInTreeSpace/BridgingInTreeSpace/YeastData")
+library(ggplot2)
+library(readr)
+library(gridExtra)
+library(dplyr)
+library(stringr)
+library(knitr)
+library(data.table)
+
+```
+
+
+This RMarkdown file lists the scripts that need to be run in order to reproduce the experimental data results from the paper `Brownian motion, bridging and Bayesian inference in phylogenetic tree space'. This includes 
+
+- Running the main inference on the source tree and dispersion parameters (Java).
+- Producing the diagnostic and summary plots, and computing modal edge lengths in the modal topology (R).
+- Building the modal tree and estimating a Fr&eacute;chet mean (Java).
+- Running the inference with source parameter fixed at the Fr&eacute;chet mean to estimate modal value of dispersion to use in FM marginal likelihood estimation.
+- Estimating marginal likelihoods using three different methods and three different trees (Java).
+- Forward simulating from the model with the modal parameters from the inference to perform model checking (Java).
+- Producing plots for the model checking (R).
+
+The following shell scripts will be run and this RMarkdown shows the order to run them in order to reproduce the output of the paper.
+
+- The data is included in the github repository in the YeastData folder. To save space in storing the MCMC output we converted the taxa names to integers using the following conversion:
+
+| Taxon name | Integer name     |
+|:-----:|:-----:|
+| Calb    | 1          |
+| Sbay   | 2       |
+| Scas    | 3       |
+| Scer    | 4       |
+| Sklu    | 5       |
+| Skud    | 6       |
+| Smik    | 6       |
+| Spar    | 8       |
+
+- **run\_yeast.sh**  is used to run the main MCMC on the yeast data. It also outputs the edge lengths in the modal topology and provides the cumulative counts of topologies in the posterior.
+- **run\_yeast\_summary\_trees.sh** builds and outputs to a file the modal tree in Newick string form. It also calculates an estimate of the Fr&eacute;chet mean and outputs it to a file. It calculates and prints the total internal edge lengths in the two trees to a file.
+- **run\_yeast\_FM\_MCMC.sh** runs the MCMC on the yeast data with the source parameter fixed at the estimate of the Fr&eacute;chet mean, in order to calculate the fixed value of $t_0$ at which to estimate the marginal likelihood for the Fr&eacute;chet mean.
+- **run\_yeast\_ML\_Chib\_tunnel\_Modal.sh** runs the Chib and tunnel estimators of the marginal likelihood for the modal tree. 
+- **run\_yeast\_ML\_StepStone\_Modal.sh** runs the stepping stone estimators of the marginal likelihood for the modal tree. 
+- **run\_yeast\_ML\_Chib\_FM.sh** runs the Chib estimator of the marginal likelihood for the Fr&eacute;chet mean. 
+- **run\_yeast\_ML\_StepStone\_FM.sh** runs the stepping stone estimator of the marginal likelihood for the modal tree. 
+- **run\_yeast\_ExactML\_Star\_Tree.sh** calculates the exact likelihood of the data with source at the star tree and dispersion given by the Fr&eacute;chet variance at the star tree.
+- **run\_yeast\_forwardSims.sh** forward simulates and calculates the distances needed to do the posterior checking.
+
+
+The main inference procedure and calculation of the Fr&eacute;chet mean is run using the script:
+
+- run_yeast.sh
+
+Plots from the output of the MCMC for the yeast data.:
+
+```{r inference_yeast_}
+##Frechet mean file has variance etc in additionally, so lets make a file with just the Newick string
+FrechParams<-read.delim("yeast_new_ints_FM_params.txt",sep=" ")
+
+writeLines(FrechParams[1,1],"yeast_new_ints_FM.txt")
+
+noOfFiles<-1
+##function to get the topology proportions
+proportionise<-function(df,val){
+  return(sum(df[,1]==val)/nrow(df))
+}
+
+##acceptance rates
+x0Data<-read.delim("yeast_new_ints_MCMCOutput.txt",sep=" ")
+x0AcceptanceRate<-x0Data[length(x0Data$source),2]
+bridgeAcceptanceRates<-x0Data[!is.na(as.numeric(x0Data$source)),]
+
+
+t0AcceptanceRate<-bridgeAcceptanceRates$source[length(bridgeAcceptanceRates$source)]
+averageBridgeAcceptanceRate<-mean(as.numeric(bridgeAcceptanceRates$source[1:(length(bridgeAcceptanceRates$source)-1)]))
+
+print(paste("x0 acceptance rate ",x0AcceptanceRate))
+print(paste("t0 acceptance rate ",t0AcceptanceRate))
+print(paste("average bridge acceptance rate ",averageBridgeAcceptanceRate))
+
+#as a table:
+acceptanceRates<-data.frame(c("x0","t0","bridges"),c(x0AcceptanceRate,t0AcceptanceRate,averageBridgeAcceptanceRate))
+colnames(acceptanceRates)<-c("Parameter","Rate")
+acceptanceRates
+
+
+##remove the acceptance rates from the data frame:
+Its<-which(x0Data$source == "#Acceptance")[1]-1
+thin<-100
+x0Data<-x0Data[1:Its,]
+x0Data$dispersion<-as.numeric(x0Data$dispersion)
+
+#make the traceplot for t0
+t0TracePlotPt<-ggplot(x0Data)+geom_line(aes(y=dispersion,x=c(1:Its)*thin))+
+  xlab("Iteration")+ylab("Dispersion")+theme(legend.position="none",plot.title = element_text(size=22,hjust=0.5),
+                                             axis.title=element_text(size=17),axis.text=element_text(size=15),axis.title.y = element_text(margin = margin(r=10)))
+
+print("traceplot of the dispersion parameter:")
+
+t0TracePlotPt
+
+ggsave("./yeast_new_ints_t0_traceplot.pdf",width=7,height=4)
+
+x0Data$LogLikelihood<-as.numeric(x0Data$LogLikelihood)
+
+#make the traceplot for the log likelihood
+LogLikePlot<-ggplot(x0Data)+geom_line(aes(y=LogLikelihood,x=c(1:Its)*thin))+
+  xlab("Iteration")+ylab("Log likelihood")+theme(legend.position="none",plot.title = element_text(size=22,hjust=0.5),
+                                                 axis.title=element_text(size=17),axis.text=element_text(size=15),axis.title.y = element_text(margin = margin(r=10)))
+print("Trace plot of the log likelihood:")
+
+LogLikePlot
+ggsave("./yeast_new_ints_loglikeplot.pdf",width=7,height=4)
+
+#make the KDE plot for t0
+t0KDEPlotPt<-ggplot(x0Data)+geom_density(aes(dispersion))+
+  xlab("Dispersion")+ylab("Density")+theme(legend.position="none",plot.title = element_text(size=11,hjust=0.5),
+                                           axis.title=element_text(size=17),axis.text=element_text(size=15))##t0KDE
+
+print("kernel density estimate from the sampled values of dispersion:")
+t0KDEPlotPt
+ggsave("./yeast_new_ints_t0_kdeplot.pdf",width=7,height=4)
+
+##get the mode of t0 from the KDE:
+t0Density <- density(x0Data$dispersion)
+t0Density<-data.frame(t0Density$x,t0Density$y)
+colnames(t0Density)<-c("Density","Dispersion")
+t0Density<- t0Density[order(t0Density$Dispersion,decreasing = TRUE),]
+print(paste0("t0 mode is (use this for marginal likelihoods): ",t0Density[1,1]))
+
+#clear x0Data from memory:
+x0Data<-NULL
+
+
+##now we plot the proportions of the main topologies in the posterior:
+theProps<-read.delim("yeast_new_ints_MCMCOutput_tops.txt",sep=" ")
+theProps<-subset(theProps,select=-c(X))
+
+theCols<-colnames(theProps)
+theCols<-theCols[-(1)]
+
+for(i in 1:length(theCols))
+{
+  aColname<- theCols[i]
+  theProps[[aColname]]=theProps[[aColname]]/sum(theProps[[aColname]])
+}
+
+its<-Its/100
+theProps<-theProps[,c(1,(its+2)-seq(0:(its-1)))]#reverse the order
+
+endcolname<-paste0("X",Its)
+theProps<-theProps[order(theProps[[endcolname]],decreasing=TRUE),]
+PropsToPlot<-transpose(theProps)
+
+tmydf = setNames(data.table(t(theProps[,-1])), theProps[,1])
+tmydf<-melt(tmydf)
+colnames(tmydf)<-c("topology","proportion")
+tmydf$Iteration<-c(1:its)
+
+##get rid of the topology with only two observations:
+#tmydf<-tmydf[tmydf$topology!="(6,(3,(1,5)),(2,(7,(4,8))));",]
+
+print("Plot the proportion of the top topologies in the posterior:")
+TopPropPlot<-ggplot(tmydf)+geom_line(aes(x=Iteration*100*thin,y=proportion,group=topology))+
+  xlab("Iteration")+ylab("Proportion")+theme(legend.position="none",plot.title = element_text(size=11,hjust=0.5),
+                                             axis.title=element_text(size=17),axis.text=element_text(size=15))##t0KDE
+
+TopPropPlot
+
+ggsave("./yeast_new_ints_tops_plot.pdf",width=7,height=4)
+
+#Now we plot the kernel density estimates of the edge lengths conditional on the modal topology
+edgeFilename<-"./yeast_new_ints_MCMCOutput_edges.txt"
+theDensity1<-read.delim(edgeFilename,sep=" ")
+
+#read in the first line and rebuild the splits because R doesn't like the header:
+theSplits<-head(read.delim(edgeFilename,header=FALSE,sep="]"),1)
+theSplits[1]<-substr(theSplits[1],3,str_length(theSplits[1]))
+theSplits<-paste0(theSplits,"]")
+theSplits<-head(theSplits,length(theSplits)-1)
+
+
+nPrime=5
+theDensity1<-theDensity1[]
+colnames(theDensity1)<-theSplits
+theDensity1<-theDensity1[,1:nPrime]
+theDensity1<-theDensity1[apply(theDensity1,1,min)!=0,]
+theDensity <- melt(data.table(theDensity1))
+
+##convert from integer node labels to the actual taxon names:
+yeast_codes<- c("Calb","Sbay","Scas","Scer","Sklu","Skud","Smik","Spar")
+#sub(yeast_codes[1],as.character(4),theDensity[1,1])
+
+#replace the taxon numbers with their four letter codes in order to visualise the output
+for(i in c(1:8)){
+  theDensity$variable <- gsub(as.character(i),yeast_codes[i],theDensity$variable)#
+}
+
+
+#Plot kernel density estimates of the edge lengths in the posterior
+print("Plot of kernel density estimates of the edge lengths in the posterior:")
+
+ggplot(theDensity)+geom_density(aes(value,color=variable))+ylab("Density")+xlab("Edge length")+
+  labs(color = "Split")+theme(axis.title=element_text(size=17),axis.text=element_text(size=15))+theme(legend.text = element_text(size=13),legend.title = element_text(size=15))
+ggsave("./yeast_new_ints_edge_lengths_kde_plot.pdf",width=9,height=4)
+
+#Top topologies in the posterior, * denotes source tree topology
+topsInPosterior<-data.table(theProps[,1],theProps[,length(colnames(theProps))])
+colnames(topsInPosterior)<-c("Topology","Proportion")
+
+
+topsInPosterior$Proportion<-paste(round(100*as.numeric(topsInPosterior$Proportion), 1), "%", sep="")
+print(topsInPosterior)
+
+```
+
+
+We find a mode tree by taking the mode of the KDEs for each edge length in the modal topology in the posterior sample. After the below has been run, the mode tree is built using the script
+
+- run_yeast_summary_trees.sh
+
+which also calculates the total internal edge lengths on the Fr&eacute;chet mean and source tree.
+
+```{r inference_yeast_mode_finding,eval=FALSE}
+
+edgeFilename<-"./yeast_new_ints_MCMCOutput_edges.txt"
+theDensity1<-read.delim(edgeFilename,sep=" ")
+theSplits<-head(read.delim(edgeFilename,header=FALSE,sep="]"),1)
+theSplits[1]<-substr(theSplits[1],3,str_length(theSplits[1]))
+theSplits<-paste0(theSplits,"]")
+theSplits<-head(theSplits,length(theSplits)-1)
+
+nPrime=5
+nPlus<-13
+theModes<-data.frame(theSplits,c(1:nPlus),c(nPlus))
+colnames(theModes)<-c("Split","notSplit","Mode")
+colnames(theDensity1)<-theSplits##need a better way of doing this...
+theDensity1<-theDensity1[,1:nPrime]
+theDensity1<-theDensity1[apply(theDensity1,1,min)!=0,]
+
+##calculate modes of kernel density estimates for each internal split:
+for(i in c(1:5)){
+  
+  Density1<-density(theDensity1[,i])
+  Density1<-data.frame(Density1$x, Density1$y)
+  colnames(Density1)<-c("x","Density")
+  theModes[i,3]<-Density1[order(Density1$Density,decreasing=TRUE),][1,1]
+}
+
+##put arbitrary values for the remaining splits:
+for(i in c(6:nPlus)){
+  theModes[i,3]<-0.2
+}
+
+theDensity <- melt(data.table(theDensity1))
+#x0HighestIndKDEs
+
+##now for Java we have to rebuild the whole splits (rather than just one side of the partition that we currently have):
+taxa<-c(1:8)
+for(i in c(1:nPlus)){
+  if(i>1) theModes[i,1]<-substr(theModes[i,1],2,str_length(theModes[i,1]))  ##get rid of space at the start of the string
+  split1<-theModes[i,1]
+  split1<-gsub("]", "", split1, fixed = TRUE)
+  insplit1<-strsplit(gsub("[", "", split1, fixed = TRUE),",")[[1]]
+  insplit1<-as.numeric(insplit1)
+  notInsplit1 <- setdiff(taxa,insplit1)
+  notInsplit1<-paste0(notInsplit1,sep=", ",collapse='')
+  notInsplit1<-paste("[",substr(notInsplit1,1,str_length(notInsplit1)-2),"]",sep="")
+
+  theModes[i,2]<-notInsplit1
+}
+
+##and write to a file that we read into Java to make a tree
+write_delim(theModes,"yeast_new_ints_MCMCOutput_splitModes.txt",delim="")
+
+```
+
+We now compare the distances from the mode tree to i) the data and ii) particles forward simulated under the fitted model. Particles are forward simulated under the fitted model using the script
+* run_yeast_posterior_checks.sh
+
+```{r inference_yeast_posterior_checking}
+
+RFDData<-read.delim("yeast_new_ints_FM_distances.txt",sep=" ",header=TRUE)
+
+RFDForwardSim <- read.delim("yeast_new_ints_forward_sim_dists.txt",sep=" ",header=TRUE)
+
+#RFDForwardSim$RFD<-as.character(RFDForwardSim$RFD)
+#RFDData$RFD<-as.character(RFDData$RFD)
+
+print("Plot of the BHV distances between the modal tree and the data set (bars) and the simulated particles (line)")
+ggplot(RFDForwardSim)+geom_histogram(data=RFDData,aes(x=GD,y=..density..))+geom_density(aes(x=GD))+ylab("Density")+xlab("Geodesic distance")+
+   labs(color = "Split")+theme(axis.title=element_text(size=13),axis.text=element_text(size=11))
+  ggsave("forward_sim_geodesic_dist_plot.pdf",width=7,height=4)
+
+
+```
+
+Now we get the value of t0 to use in the marginal likelihood calculations for the Fr&eacute;chet mean. This is done by running the inference fixed at the Fr&eacute;chet mean using the script:
+
+- run_yeast_FM_MCMC.sh
+
+```{r FM_Modal_t0}
+##reread in the data
+x0Data<-read.delim("yeast_new_ints_MCMC0utput_FM_justdisp.txt",sep=" ")
+
+Its<-which(x0Data$source == "#Acceptance")[1]-1
+thin<-100
+x0Data<-x0Data[1:Its,]
+x0Data$dispersion<-as.numeric(x0Data$dispersion)
+
+
+##get the mode of t0 from the KDE:
+t0Density <- density(x0Data$dispersion)
+t0Density<-data.frame(t0Density$x,t0Density$y)
+colnames(t0Density)<-c("Density","Dispersion")
+t0Density<- t0Density[order(t0Density$Dispersion,decreasing = TRUE),]
+print(paste0("t0 mode is (use this for marginal liklelihoods): ",t0Density[1,1]))
+
+```
+
+Now it remains to run the marginal likelihood estimators with the following files:
+
+- Fr&eacute;chet mean, stepping stone - run_yeast_StepStone_FM.sh
+- Fr&eacute;chet mean, Chib and tunnel - run_yeast_Chib_FM.sh
+- Modal tree, stepping stone - run_yeast_StepStone_Modal.sh
+- Modal tree, Chib and tunnel - run_yeast_Chib_modal.sh
+- Star tree 
+
+
