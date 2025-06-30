@@ -1,6 +1,6 @@
 /*
-BridgeWithApproxMVNLike
-    Copyright (C) 2015  Tom M. W. Nye
+BridgeWithStepStoneLike
+    Copyright (C) 2025  William M Woodman
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@ BridgeWithApproxMVNLike
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-    Contact the author at:  <tom.nye@ncl.ac.uk>
-                            <http://www.mas.ncl.ac.uk/~ntmwn/>
+    Contact the author at:  <w.m.woodman2@ncl.ac.uk>
+                           
  */
 
 package bridge;
@@ -165,7 +165,6 @@ protected double[] calcStepLogLikeProp(TreeAsSplits tA, TreeAsSplits tB, Geodesi
         double RWsd = Math.sqrt(var);
         double sd = Math.sqrt(var*((double)(numSteps-j))/((double)(numSteps-j+1)));
         int numStepsRemaining =numSteps+1-j;
-        //double ll=computeFixedMixtureStepDensity(tA,  theTrees[numSteps], tB, sd, numStepsRemaining, unifDist)-nPrime*Math.log(Math.sqrt(2*Math.PI));
         double ll=computeFixedMixtureStepDensity(tA,  theTrees[numSteps], tB, sd, RWsd, numStepsRemaining, unifDist)-(nPrime)*Math.log(Math.sqrt(2*Math.PI));
         
         

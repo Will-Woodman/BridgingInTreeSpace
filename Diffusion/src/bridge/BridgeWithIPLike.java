@@ -1,6 +1,6 @@
 /*
-BridgeWithApproxMVNLike
-    Copyright (C) 2015  Tom M. W. Nye
+BridgeWithIPLike
+    Copyright (C) 2025  William M Woodman
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,26 +15,19 @@ BridgeWithApproxMVNLike
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-    Contact the author at:  <tom.nye@ncl.ac.uk>
-                            <http://www.mas.ncl.ac.uk/~ntmwn/>
+    Contact the author at:  <w.m.woodman2@ncl.ac.uk>
+                           
  */
 
 package bridge;
 
 import geodesics.Geodesic;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import simulation.NormalDistribution;
-import treebase.AlgorithmError;
 import treebase.AlgorithmException;
-import treebase.Split;
 import treebase.TreeAsSplits;
 
 /** Bridge where likelihood is the independence proposal density. Used for simulating
  * bridges from the independence proposal given that all steps are simple using MCMC.
- * This forms part of the reference distribution for Chib marginal likelihood
- * Therefore the mixture used is the fixed mixture
+ * This forms part of the reference distribution for Chib one block marginal likelihood estimator (for unknown t0)
  */
 
 public class BridgeWithIPLike extends ForwardStepBridge {

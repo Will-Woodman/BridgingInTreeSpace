@@ -1,17 +1,27 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
+GDKSimulationMain
+    Copyright (C) 2025  William M Woodman
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    Contact the author at:  <w.m.woodman2@ncl.ac.uk>
+                           
  */
 
-
 package bridge;
-import topologies.*;
 import MCMC.PosteriorAnalysis;
 import java.io.File;
-import static MCMC.PosteriorAnalysis.extractTreesFromOutputFile;
-import static MCMC.PosteriorAnalysis.outputEdgeLengthsForModalTopology;
-import static MCMC.PosteriorAnalysis.countTopologiesAtPoints;
-import static bridge.TreeDistributions.sampleExponentialBump;
 import static bridge.TreeDistributions.sampleExponentialBumpViaMVNStep;
 import cern.jet.random.tdouble.DoubleUniform;
 import geodesics.Geodesic;
@@ -21,8 +31,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import treebase.TreeAsSplits;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import simulation.NormalDistribution;
 import simulation.Random;
 import treebase.AlgorithmError;

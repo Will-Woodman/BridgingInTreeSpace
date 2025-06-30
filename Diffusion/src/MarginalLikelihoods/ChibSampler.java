@@ -1,6 +1,6 @@
 /*
-    InferBrownianParamsMCMC
-    Copyright (C) 2015  Tom M. W. Nye
+    ChibSampler
+    Copyright (C) 2025  William M Woodman
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,9 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-    Contact the author at:  <tom.nye@ncl.ac.uk>
-                            <http://www.mas.ncl.ac.uk/~ntmwn/>
-*/
+    Contact the author at:  <w.m.woodman2@ncl.ac.uk>
+                           
+ */
 
 package MarginalLikelihoods;
 
