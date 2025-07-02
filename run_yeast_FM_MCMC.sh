@@ -1,8 +1,8 @@
 #!/bin/bash
 ##filenames
 data_filename="./YeastData/yeast_new_ints.txt" # x0 tree filename
-frechet_params_filename="./YeastData/yeast_new_ints_FM_0624test.txt"
-output_filename="./YeastData/yeast_new_ints_MCMC0_FM_justdisp_624test.txt"
+frechet_params_filename="./YeastData/yeast_new_ints_FM.txt"
+output_filename="./YeastData/yeast_new_ints_MCMC0utput_FM_justdisp.txt"
 
 #Run the MCMC:
 args=(
@@ -12,11 +12,11 @@ args=(
 	"50" # Num steps
 	"1051" # Seed
 	"-n" #
-	"5000" #"500000" # Num interations
+	"500000" # Num interations
 	"-t"
-	"1" # "100" # thin
+	"100" # thin
 	"-b"
-	"100" #"500000" #burnin
+	"100000" #burnin
 	"-o"
 	$output_filename #output file
 	"-pbg"

@@ -1,8 +1,9 @@
 #!/bin/bash
  
  data_filename="./YeastData/yeast_new_ints.txt" # x0 tree filename
- source_tree_filename="./YeastData/yeast_new_ints_FM_OP.txt" # data filename
- posterior_filename="./YeastData/yeast_new_ints_FM_OP_ChibJeliPostv2_test0624.txt" # output filename for the samples from the posterior
+ source_tree_filename="./YeastData/yeast_new_ints_FM.txt" # data filename
+ posterior_filename="./YeastData/yeast_new_ints_FM_Chib_Post.txt" # output filename for the samples from the posterior
+ props_filename="./YeastData/yeast_new_ints_FM_Chib_Post.txt" # output filename for the samples from the posterior
 
 #run the MCMC and independence proposals
 args=(
@@ -12,17 +13,17 @@ args=(
         "50" # Num steps
         "1260" # Seed
         "-n" #
-        "1000" # "1000000" # Num MCMC interations - before thin
+        "1000000" # Num MCMC interations - before thin
         "-t" #
-        "1" # "100" # thin
+        "100" # thin
         "-b" #
-        "100" # "100000" # burn-in
+        "100000" # burn-in
         "-o" # 
         $posterior_filename # output file for the posterior
         "-pbg" # 
         "0.05" # partial bridge proposal parameter
         "-numProps" # 
-        "500" # "50000" # Num independence proposals to run
+        "50000" # Num independence proposals to run
         $props_filename # output file for the proposals
         )
         

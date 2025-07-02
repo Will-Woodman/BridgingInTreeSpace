@@ -1,27 +1,27 @@
 #!/bin/bash
  
  data_filename="./YeastData/yeast_new_ints.txt" # x0 tree filename
- source_tree_filename="./YeastData/yeast_new_ints_FM_OP.txt" # data filename
- posterior_filename="./YeastData/yeast_new_ints_FM_OP_StepStone_test0624" # output file for the posterior
+ source_tree_filename="./YeastData/yeast_new_ints_FM.txt" # data filename
+ posterior_filename="./YeastData/yeast_new_ints_FM_StepStone" # output file for the posterior
 
 
 args=(
         $data_filename
         $source_tree_filename
-        "0.13" # Squ root t_0
+        "0.129" # Squ root t_0
         "50" # Num steps
         "1802" # Seed
         "-n" # 
-        "50" # "10000" # Num interations - before thin
+        "10000" # Num interations - before thin
         "-t" # 
-        "1" # "20" # thin
+        "20" # thin
         "-b" # 
-        "100" # "10000" # burn-in
+        "10000" # burn-in
         "-o" # 
         $posterior_filename #posterior output files 
         "-pbg" # 
         "0.05" # geometric length bridge prop
-        "200" # "50000" # number of Proposals to run
+        "50000" # number of Proposals to run
         "0.01" # the first non zero value of beta_k
         ) 
         
