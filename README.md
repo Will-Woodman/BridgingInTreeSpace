@@ -1,9 +1,24 @@
+# Bridging in tree space
+
+## Table of Contents
+- [Installation](#installation)
+- [Running the inference procedures](#running-the-inference-procedures)
+  - [Posterior inference using bridges](#posterior-inference-using-bridges)
+  - [Noisy MCMC for topology inference](#noisy-mcmc-for-topology-inference)
+  - [Marginal likelihood for fixed dispersion - Chib](#marginal-likelihood-for-fixed-dispersion---chib)
+  - [Marginal likelihood for fixed dispersion - Tunnel](#marginal-likelihood-for-fixed-dispersion---tunnel)
+  - [Marginal likelihood for fixed dispersion - Stepping Stone](#marginal-likelihood-for-fixed-dispersion---stepping-stone)
+## Installation
+
+
 This Github repository includes the code required to perform the statistical inference procedures specified in the paper [Brownian motion, bridges and Bayesian inference in phylogenetic tree space](https://arxiv.org/abs/2506.22135) and my upcoming thesis.
 
 An html file and corresponding RMarkdown file for reproducing the analysis on yeast gene trees detailed in the paper called ExperimentalDataRScript are provided as part of this project.
 
 The code can be downloaded from this Github repository and run from the command line.
 
+## Running the inference procedures
+### Posterior inference using bridges
 Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, withina folder called Example_folder, posterior inference can be run using a .sh script in the following form, where the parameters followed by a comment can be modifed as required:
 
 <pre> ```
@@ -71,7 +86,15 @@ java -cp "./dist/BridgingInTreeSpace.jar" topologies/edgeLengthsModalTop "${args
 
 ``` </pre>
 
-To run the noisy MCMC algorithm for inferring the species tree when gene trees are modelled as draws from a Brownian motion kernel (approxiimated by a random walk kernel, run a .sh script of the following form:
+### Marginal likelihood for fixed dispersion - Chib
+
+### Marginal likelihood for fixed dispersion - Tunnel
+
+### Marginal likelihood for fixed dispersion - Stepping Stone
+
+### Noisy MCMC for topology inference
+
+To run the noisy MCMC algorithm for inferring the species tree when gene trees are modelled as draws from a Brownian motion kernel (approximated by a random walk kernel), run a .sh script of the following form:
 
 
 
