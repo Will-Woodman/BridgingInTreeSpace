@@ -17,7 +17,10 @@ An html file and corresponding RMarkdown file for reproducing the analysis on ye
 The code can be downloaded from this Github repository and run from the command line.
 
 ## Running the inference procedures
+
 ### Posterior inference using bridges
+<details>
+<summary>⭐ show/hide</summary>
 Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, withina folder called Example_folder, posterior inference can be run using a .sh script in the following form, where the parameters followed by a comment can be modifed as required:
 
 <pre> ```
@@ -85,8 +88,12 @@ java -cp "./dist/BridgingInTreeSpace.jar" topologies/edgeLengthsModalTop "${args
 
 ``` </pre>
 
+</details>
+
 ### Marginal likelihood for fixed dispersion - Chib and tunnel
 
+<details>
+<summary>⭐ show/hide</summary>
 Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder, to estimate the marginal likelihood for a fixed value of dispersion and a fixed source tree given in the file Example_source.txt, a .sh script of the form specified below can be run. Parameters followed by a comment can be modifed as required.
 
 <pre> ```
@@ -134,12 +141,48 @@ java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/ChibJel
 
 java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/BridgeSamplingEstimate "${args[@]}"  >> ${folder_name}${file_prefix}TunnelEst.txt #replace with file name for storing the tunnel estimate
 ``` </pre>
+<\details>
 
 ### Marginal likelihood for fixed dispersion - Stepping Stone
 
 ### Noisy MCMC for topology inference
 
-To run the noisy MCMC algorithm for inferring the species tree when gene trees are modelled as draws from a Brownian motion kernel (approximated by a random walk kernel), run a .sh script of the following form:
+<details>
+<summary>⭐ show/hide</summary>
+
+Suppose we are given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder. To run the noisy MCMC algorithm for inferring the species tree when gene trees are modelled as draws from a Brownian motion kernel (approximated by a random walk kernel), run a .sh script of the following form (note that in this analysis we manually input an initial tree):
+
+<pre> ```
+#!/bin/bash
+##filenames
+file_prefix="Example_trees"
+folder_name="./Example_folder/"
+source_tree_filename = "Example_source.txt"
+data_filename="${folder_name}${file_prefix}.txt" # data filename
+output_filename="${folder_name}${file_prefix}_MCMCOutput.txt"
+topologies_filename="${folder_name}${file_prefix}_MCMCOutput_tops.txt"
+
+#Run the MCMC:
+args=(
+	$data_filename # data filename
+	$initial_tree_filename # initial tree filename
+	$output_filename # output file for the MCMC
+	$topologies_filename # a file to count the topologies in the MCMC output into
+	"1" # Initial squ root t_0 
+	"50" # Num steps in the random walks
+    "10000" # Number of particles in the approx likelihood calcs
+	"1" # Number of cores to use in forward simulating particles
+	"15000" # Num interations
+	"0" #burnin
+	"100" # thin
+	"0.1" # parameter for the log random walk edge proposal
+	"0.1" # parameter for the random walk edge proposal
+)
+
+java -cp "./dist/BridgingInTreeSpace.jar" topologies/InferParamsViaApproxLike "${args[@]}"
+
+``` </pre>
+
 
 
 
