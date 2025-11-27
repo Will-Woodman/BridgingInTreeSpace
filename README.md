@@ -295,8 +295,8 @@ args=(
 		"0.5" # dispersion log random walk proposal parameter
         "-prd" 
         "1" # whether to parametrise the lognormal reference distribution for t0: 1 for yes 0 for no -- advisable to do so
-        ref_dist_parameters_filename # file to store the parameters of the t0 reference distribution in
-        additional_ref_dist_filename # file to store the new t0 densities (for the reference dist) in 
+        $ref_dist_parameters_filename # file to store the parameters of the t0 reference distribution in
+        $additional_ref_dist_filename # file to store the new t0 densities (for the reference dist) in 
 		"897" # Seed - ref dist MCMC sims
         "-n"
         "250000" # Num interations - before thin - ref dist MCMC sims
