@@ -211,13 +211,74 @@ Given a set of unrooted phylogenetic trees in Newick string format in a file cal
  data_filename="${folder_name}${file_prefix}.txt" # data filename
  source_tree_filename="${folder_name}${source_tree_filename}" # data filename
  posterior_filename="${folder_name}${file_prefix}_Chib_Post.txt" # output filename for the samples from the posterior
- props_filename="${folder_name}${file_prefix}_Chib_Props.txt" # output filename for the samples from the proposals
+ ref_dist_filename="${folder_name}${file_prefix}_Chib_Props.txt" # output filename for the samples from the reference distribution 
+ ref_dist_parameters_filename = "${folder_name}${file_prefix}_Chib_Ref_Dist_Params.txt"
+ additional_ref_dist_filename="${folder_name}${file_prefix}_Chib_Additional_Disp.txt" # output filename for the additional file for evaluating the density of the reference distribution for dispersion
+ prop_simple_filename="${folder_name}${file_prefix}_Chib_Prop_Simple.txt" # output filename for estimating the normalising constant of the reference distribution
 
+String[] args1 = new String[21];
+        //arguments for the posterior MCMC sims -- may want to use different parameters for the posterior and reference dists
+        args1[0] = args[0]; //data filename
+        args1[1] = args[1]; //source tree filename
+        args1[2] = "0.0"; // // Initial squ root t_0 - delete this option eventually
+        args1[3] = "20"; // Num steps
+        args1[4] = "344"; // Seed
+        args1[5] = "-n";
+        args1[6] = "250000"; // Num interations - before thin
+        args1[7] = "-t";
+        args1[8] = "20"; // thin
+        args1[9] = "-b";
+        args1[10] = "10000"; //burn-in
+        args1[11] = "-o";
+        args1[12] = "/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/MarginalLikelihoods/MultiplePointTest/Post.txt"; //file_name to store posterior sims
+        args1[13] = "-pbg";
+        args1[14] = "0.01"; //geometric length partial bridge proposal parameter
+        args1[15] = "-ptr";
+        args1[16] = "0.5"; // dispersion log random walk proposal parameter
+        args1[17] = "-prd"; //whether to parametrise the lognormal reference distribution for t0: 1 for yes 0 for no -- advisable to do so
+        args1[18] = "1";
+        args1[19] =""; //file to store the parameters of the t0 reference distribution in
+        args1[20] =""; //file to store the new t0 densities (for the reference dist) in 
+
+        
+       
+        String[] args2 = new String[19];
+        //arguments for the ref dist MCMC sims -- may want to use different parameters for the posterior and reference dists
+        args2[0] = args1[0];
+        args2[1] = args1[1];
+        args2[2] = "0.0"; //Initial squ root t_0 - delete this option eventually
+        args2[3] = args1[3]; // Num steps
+        args2[4] = "0.0"; //Placeholder for reference dist params
+        args2[5] = "0.0"; //Placeholder for reference dist params
+        args2[6] = "897"; // Seed
+        args2[7] = "-n";
+        args2[8] = "250000"; // Num interations - before thin
+        args2[9] = "-t";
+        args2[10] = "20"; // thin
+        args2[11] = "-b";
+        args2[12] = "10000";//burnin
+        args2[13] = "-o";
+        args2[14] = "";//output filename for simple indep props via MCMC
+        args2[15] = "-pbg";
+        args2[16] = "0.01"; //geometric length partial bridge proposal parameter
+        args2[17] = "-ptr"; //dispersion log random walk proposal parameter
+        args2[18] = "0.5";
+        
+        String[] args3 = new String[8];
+        //arguments for calculating the proportion of simple proposals
+        args3[0] = args1[0];
+        args3[1] = args1[1];
+        args3[2] = ""; // OutFileName
+        args3[3] = "0.0"; //Placeholder for reference dist params
+        args3[4] = "0.0"; //Placeholder for reference dist params
+        args3[5] = "200"; //numDisps
+        args3[6] = "500"; //numProps
+        args3[7] = args1[3]; //num steps
+	
 #run the MCMC and independence proposals
 args=(
         $data_filename
         $source_tree_filename
-        "0.13" # squ root t_0
         "50" # Num steps
         "1260" # Seed
         "-n" #
@@ -230,9 +291,28 @@ args=(
         $posterior_filename # output file for the posterior
         "-pbg" # 
         "0.05" # partial bridge proposal parameter
-        "-numProps" # 
-        "50000" # Num independence proposals to run
-        $props_filename # output file for the proposals
+		"-ptr"
+		"0.5" # dispersion log random walk proposal parameter
+        "-prd" 
+        "1" # whether to parametrise the lognormal reference distribution for t0: 1 for yes 0 for no -- advisable to do so
+        ref_dist_parameters_filename # file to store the parameters of the t0 reference distribution in
+        additional_ref_dist_filename # file to store the new t0 densities (for the reference dist) in 
+		"897" # Seed - ref dist MCMC sims
+        "-n"
+        "250000" # Num interations - before thin - ref dist MCMC sims
+        "-t"
+        "20" # thin - ref dist MCMC sims
+        "-b"
+        "10000" # burnin - ref dist MCMC sims
+        "-o"
+        $ref_dist_filename # output filename for simple indep props via MCMC
+        "-pbg"
+        "0.01" # geometric length partial bridge proposal parameter
+        "-ptr" 
+        "0.5" # dispersion log random walk proposal parameter
+	    $prop_simple_filename # Output file name for estimating normalizing constant of the reference distribution
+        "200" # number of values of dispersion to use in the numerical integration
+        "500" # number of proposals per data point per value of dispersion
         )
         
 java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodsWithDisp/TunnelSamplingDisp "${args[@]}"
