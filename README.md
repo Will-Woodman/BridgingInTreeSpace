@@ -7,6 +7,9 @@
   - [Noisy MCMC for topology inference](#noisy-mcmc-for-topology-inference)
   - [Marginal likelihood for fixed dispersion - Chib and Tunnel](#marginal-likelihood-for-fixed-dispersion---chib-and-tunnel)
   - [Marginal likelihood for fixed dispersion - Stepping Stone](#marginal-likelihood-for-fixed-dispersion---stepping-stone)
+  - [Marginal likelihood for unknown dispersion - Chib one block and Tunnel](#marginal-likelihood-for-unknown-dispersion---chib-one-block-and-tunnel)
+  - [Marginal likelihood for unknown dispersion - Stepping Stone](#marginal-likelihood-for-unknown-dispersion---stepping-stone)
+  - [Marginal likelihood for unknown dispersion - Chib Two Block](#marginal-likelihood-for-unknown-dispersion---chib-two-block)
 ## Installation
 
 
@@ -193,6 +196,168 @@ java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/StepSto
 ``` </pre>
 </details>
 
+### Marginal likelihood for unknown dispersion - Chib one block and tunnel
+
+<details>
+<summary>⭐ show/hide</summary>
+Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder, to estimate the marginal likelihood using the Chib one block and tunnel (bridge) methods where the dispersion is considered an unknown nuisance parameter and a fixed source tree is given in the file Example_source.txt, a .sh script of the form specified below can be run. Parameters followed by a comment can be modifed as required.
+
+<pre> ```
+#!/bin/bash
+ 
+ file_prefix="Example_trees"
+ folder_name="./Example_folder/"
+ source_tree_filename = "Example_source.txt"
+ data_filename="${folder_name}${file_prefix}.txt" # data filename
+ source_tree_filename="${folder_name}${source_tree_filename}" # data filename
+ posterior_filename="${folder_name}${file_prefix}_Chib_Post.txt" # output filename for the samples from the posterior
+ props_filename="${folder_name}${file_prefix}_Chib_Props.txt" # output filename for the samples from the proposals
+
+#run the MCMC and independence proposals
+args=(
+        $data_filename
+        $source_tree_filename
+        "0.13" # squ root t_0
+        "50" # Num steps
+        "1260" # Seed
+        "-n" #
+        "1000000" # Num MCMC interations - before thin
+        "-t" #
+        "100" # thin
+        "-b" #
+        "100000" # burn-in
+        "-o" # 
+        $posterior_filename # output file for the posterior
+        "-pbg" # 
+        "0.05" # partial bridge proposal parameter
+        "-numProps" # 
+        "50000" # Num independence proposals to run
+        $props_filename # output file for the proposals
+        )
+        
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodsWithDisp/TunnelSamplingDisp "${args[@]}"
+
+#calculate the estimates
+
+args=(
+	$prop_simple_filename
+	$posterior_filename
+	$props_filename
+	$additional_dispersion_file
+)
+
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculationsWithDisp/ChibJeliEstimateDisp "${args[@]}"  >> ${folder_name}${file_prefix}_ChibEst.txt #replace with file name for storing the Chib estimate
+
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculationsWithDisp/TunnelSamplingEstimateDisp "${args[@]}"  >> ${folder_name}${file_prefix}TunnelEst.txt #replace with file name for storing the tunnel estimate
+``` </pre>
+</details>
+
+
+
+### Marginal likelihood for unknown dispersion - Stepping Stone
+
+<details>
+<summary>⭐ show/hide</summary>
+Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder, to estimate the marginal likelihood using the stepping stone method where the dispesion is consider an unknown nuisance parameter and a fixed source tree is given in the file Example_source.txt, a .sh script of the form specified below can be run. Parameters followed by a comment can be modifed as required.
+
+<pre> ```
+#!/bin/bash
+ 
+ file_prefix="Example_trees"
+ folder_name="./Example_folder/"
+ source_tree_filename = "Example_source.txt"
+ data_filename="${folder_name}${file_prefix}.txt" # data filename
+ source_tree_filename="${folder_name}${source_tree_filename}" # data filename
+ posterior_filename="${folder_name}${file_prefix}_Chib_Post.txt" # output filename for the samples from the posterior
+
+
+args=(
+        $data_filename
+        $source_tree_filename
+        "0.13" # Square root of dispersion
+        "50" # Num steps in the bridges
+        "1802" # Set the seed for the random number generator
+        "-n" # 
+        "10000" # Num interations - before thin
+        "-t" # 
+        "20" # thin
+        "-b" # 
+        "10000" # burn-in
+        "-o" # 
+        $posterior_filename #posterior output files 
+        "-pbg" # 
+        "0.05" # geometric length bridge prop
+        "200" # "50000" # number of Proposals to run
+        "0.01" # the first non zero value of beta_k
+        ) 
+        
+
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodsWithDisp/SteppingStoneSamplingDisp "${args[@]}"
+
+args=(
+	$prop_simple_filename
+ 	$posterior_filename
+ 	)
+        
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculationsWithDisp/StepStoneEstimateDisp "${args[@]}" >> ${folder_name}${file_prefix}StepStoneEst.txt #file name for storing the Chib estimate
+
+``` </pre>
+</details>
+
+
+### Marginal likelihood for unknown dispersion - Chib two block
+
+<details>
+<summary>⭐ show/hide</summary>
+Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder, to estimate the marginal likelihood using the Chib two block method where the dispersion is considered an unknown nuisance parameter and a fixed source tree given in the file Example_source.txt, a .sh script of the form specified below can be run. Parameters followed by a comment can be modifed as required.
+
+<pre> ```
+#!/bin/bash
+ 
+ file_prefix="Example_trees"
+ folder_name="./Example_folder/"
+ source_tree_filename = "Example_source.txt"
+ data_filename="${folder_name}${file_prefix}.txt" # data filename
+ source_tree_filename="${folder_name}${source_tree_filename}" # data filename
+ posterior_filename="${folder_name}${file_prefix}_Chib_Post.txt" # output filename for the samples from the posterior
+ props_filename="${folder_name}${file_prefix}_Chib_Props.txt" # output filename for the samples from the proposals
+
+#run the MCMC and independence proposals
+args=(
+        $data_filename
+        $source_tree_filename
+        "0.13" # squ root t_0
+        "50" # Num steps
+        "1260" # Seed
+        "-n" #
+        "1000000" # Num MCMC interations - before thin
+        "-t" #
+        "100" # thin
+        "-b" #
+        "100000" # burn-in
+        "-o" # 
+        $posterior_filename # output file for the posterior
+        "-pbg" # 
+        "0.05" # partial bridge proposal parameter
+        "-numProps" # 
+        "50000" # Num independence proposals to run
+        $props_filename # output file for the proposals
+        )
+        
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodsWithDisp/ChibTwoBlock "${args[@]}"
+
+
+#calculate the estimates
+args=(
+	$fixed_disp_posterior_filename
+	$fixed_disp_props_filename
+	$posterior_filename
+)
+
+java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculationsWithDisp/ChibTwoBlockEstimate "${args[@]}"  >> ${folder_name}${file_prefix}_ChibEst.txt #replace with file name for storing the Chib estimate
+
+``` </pre>
+</details>
 
 
 ### Noisy MCMC for topology inference
