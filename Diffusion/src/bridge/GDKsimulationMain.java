@@ -1,5 +1,9 @@
 /*
+<<<<<<< HEAD
+GDKsimulationMain
+=======
 GDKSimulationMain
+>>>>>>> 9326c42338de26f6a866256b3baa4f195ce299d6
     Copyright (C) 2025  William M Woodman
 
     This program is free software: you can redistribute it and/or modify
@@ -48,20 +52,21 @@ public class GDKsimulationMain {
      * sampleExponentialBumpViaMVNStep class
      */
     public static void main(String[] args) throws IOException, AlgorithmError, AlgorithmException {
+       
+        String initialTreeFilename = args[0];  //Tree x0 the 'centre' of the distribution
+        String outputFilename = args[1]; //output file for the simulated trees
+        String outputFilenameTops = args[2]; //output file for the topologies of the simulated trees
+        String outputFilenameDist = args[3]; //output file for the geodesic distances of the simulated trees to the source        
+        int seed = Integer.parseInt(args[4]); // see for the random engine
+        double r = Double.parseDouble(args[5]); //value of t0 in the kernel
+        double sd = Double.parseDouble(args[6]); // value for the proposal distribution which is a random walk proposal
+        int nits = Integer.parseInt(args[7]); // number of iterations in the MCMC    
+        int burnits = Integer.parseInt(args[8]); // number of burn-in iterations in the MCMC    
+        int thin = Integer.parseInt(args[9]); // number of burn-in iterations in the MCMC    
         
-        int seed =4000;
+        
         Random.setEngine(seed);
-        
-        //Tree x0 the 'centre' of the distribution
-        String initialTreeFilename = "/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/MarginalLikelihoods/10Taxa/SourceTree1.txt";
-        
-        String outputFilename = "/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/GKDSims20231009/10Taxa/Try4.txt";
-        //output file with just topologies
-        String outputFilenameTops = "/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/GKDSims20231009/10Taxa/Try4Tops.txt";
-        //output file with the distances of the sampled points to x0
-        String outputFilenameDist = "/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/GKDSims20231009/10Taxa/Try4Dists.txt";
-        
-   
+        //make the files
         File outFile = new File(outputFilename);
         File outFileTops = new File(outputFilenameTops);
         File outFileDist = new File(outputFilenameDist);
@@ -80,12 +85,6 @@ public class GDKsimulationMain {
         }
         TreeAsSplits x0 = new TreeAsSplits(initialTree);
         
-        //value for t0:
-        double r = 0.1;
-        // value for the proposal distribution which is a random walk proposal
-        double sd = 0.09;
-        //parameters for the MCMC
-        int burnits = 10000, thin = 100, nits = 3000000;
         NormalDistribution normDist = new NormalDistribution(0.0, sd);
         DoubleUniform unifDist = new DoubleUniform(simulation.Random.getEngine());
         boolean[] CBound = new boolean[1];
