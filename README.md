@@ -10,8 +10,9 @@
   - [Marginal likelihood for unknown dispersion - Chib one block and Tunnel](#marginal-likelihood-for-unknown-dispersion---chib-one-block-and-tunnel)
   - [Marginal likelihood for unknown dispersion - Stepping Stone](#marginal-likelihood-for-unknown-dispersion---stepping-stone)
   - [Marginal likelihood for unknown dispersion - Chib Two Block](#marginal-likelihood-for-unknown-dispersion---chib-two-block)
+  - [Simulating from the Gaussian kernel distribution using MCMC](#simulating-from-the-gaussian-kernel-distribution-using-mcmc)
 ## Installation
-
+Simulating from the Gaussian kernel distribution using MCMC
 
 This Github repository includes the code required to perform the statistical inference procedures specified in the paper [Brownian motion, bridges and Bayesian inference in phylogenetic tree space](https://arxiv.org/abs/2506.22135) and my upcoming thesis.
 
@@ -452,4 +453,40 @@ java -cp "./dist/BridgingInTreeSpace.jar" topologies/InferParamsViaApproxLike "$
 
 
 </details>
+
+### Simulating from the Gaussian kernel distribution using MCMC
+<details>
+<summary>⭐ show/hide</summary>
+Given an unrooted phylogenetic tree in Newick string format in a file called Example_tree.txt, within a folder called Example_folder, we can simulate from a Gaussian kernel, as in the paper [kdetrees: non-parametric estimation of phylogenetic tree distributions](https://academic.oup.com/bioinformatics/article/30/16/2280/2748204) a .sh script in the following form, where the parameters followed by a comment can be modifed as required:
+
+<pre> ```
+#!/bin/bash
+##filenames
+file_prefix="Example_tree"
+folder_name="./Example_folder/"
+tree_filename="${folder_name}${file_prefix}.txt" # data filename
+output_filename="${folder_name}${file_prefix}_MCMCOutput.txt"
+topologies_filename="${folder_name}${file_prefix}_MCMCOutput_tops.txt"
+geodesic_distances_filename="${folder_name}${file_prefix}_MCMCOutput_distnaces.txt"
+
+#Run the MCMC:
+args=(
+	$data_filename # Tree x0 the 'centre' of the distribution
+	$output_filename # output file for the simulated trees
+	$topologies_filename # output file for the topologies of the simulated trees
+	$geodesic_distances_filename # output file for the geodesic distances of the simulated trees to the source        
+	"947" # seed for the random engine
+	"1.0" # value of t0 in the kernel
+	"0.09" # value for the proposal distribution which is a random walk proposal
+	"10000" # number of iterations in the MCMC  
+	"1000" # number of burn-in iterations in the MCMC    
+	"10" # number of thin iterations in the MCMC  
+)
+
+java -cp "./dist/BridgingInTreeSpace.jar" bridge/GDKsimulationMain "${args[@]}"
+
+``` </pre>
+
+</details>
+
 
