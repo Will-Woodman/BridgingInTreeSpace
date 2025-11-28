@@ -161,8 +161,7 @@ Given a set of unrooted phylogenetic trees in Newick string format in a file cal
  source_tree_filename = "Example_source.txt"
  data_filename="${folder_name}${file_prefix}.txt" # data filename
  source_tree_filename="${folder_name}${source_tree_filename}" # data filename
- posterior_filename="${folder_name}${file_prefix}_Chib_Post.txt" # output filename for the samples from the posterior
-
+ posterior_filename="${folder_name}${file_prefix}_Step_Stone" # output filename for the samples from the posterior
 
 args=(
         $data_filename
@@ -283,36 +282,54 @@ Given a set of unrooted phylogenetic trees in Newick string format in a file cal
 
 <pre> ```
 #!/bin/bash
- 
+
  file_prefix="Example_trees"
  folder_name="./Example_folder/"
  source_tree_filename = "Example_source.txt"
  data_filename="${folder_name}${file_prefix}.txt" # data filename
  source_tree_filename="${folder_name}${source_tree_filename}" # data filename
- posterior_filename="${folder_name}${file_prefix}_Chib_Post.txt" # output filename for the samples from the posterior
-
+ posterior_filename="${folder_name}${file_prefix}_step_stone_posterior.txt"
+ ref_dist_filename="${folder_name}${file_prefix}_step_stone_reference.txt"
+ stepping_dist_filename="${folder_name}${file_prefix}_step_stone_disp" # output filename for the samples from the posterior
 
 args=(
         $data_filename
         $source_tree_filename
-        "0.13" # Square root of dispersion
+        "0" # Initial squ root t_0 - set to zero to use the Frechet variance -- recommended to use FV - short initial posterior run
         "50" # Num steps in the bridges
-        "1802" # Set the seed for the random number generator
+        "1802" # Set the seed for the random number generator - short initial posterior run
         "-n" # 
-        "10000" # Num interations - before thin
+        "10000" # Num interations - before thin - short initial posterior run
         "-t" # 
-        "20" # thin
+        "20" # thin - short initial posterior run
         "-b" # 
-        "10000" # burn-in
+        "10000" # burn-in - short initial posterior run
         "-o" # 
-        $posterior_filename #posterior output files 
+        $posterior_filename #posterior output files  - short initial posterior run
         "-pbg" # 
-        "0.05" # geometric length bridge prop
-        "200" # "50000" # number of Proposals to run
-        "0.01" # the first non zero value of beta_k
+        "0.05" # geometric length bridge prop - short initial posterior run
+		"-ptr" #
+        "0.5" # log random walk proposal parameter - short initial posterior run
+	    $ref_dist_filename # Output file for calculatating normalising constant of the reference distribution
+		"200" # num of values of dispersion to use in numerical integration for reference dist
+        "500" # num of proopsals to calculate the normalising constant of the reference distribution
+	    "FV" # write FV to use the Frechet variance about x0 or otherwise specidy a number -- recommended to use FV - stepping stone run
+		"490" # Seed - stepping stone run
+		"-n" #  
+		"3000" # Num interations - before thin - stepping stone run
+		"-t" # 
+		"20" # thin - stepping stone run
+		"-b" # 
+		"5000" # burn-in - stepping stone run
+		"-o" # # output file name for the MCMC outputs from each step on the path
+		$stepping_dist_filename # 
+		"-pbg" # 
+		"0.01" # geometric length bridge prop - stepping stone run
+		"-ptr" # 
+		"0.5" # t0 random walk proposal - stepping stone run
         ) 
-        
-
+        	
+ 
 java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodsWithDisp/SteppingStoneSamplingDisp "${args[@]}"
 
 args=(
