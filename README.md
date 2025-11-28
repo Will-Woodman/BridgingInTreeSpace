@@ -215,65 +215,6 @@ Given a set of unrooted phylogenetic trees in Newick string format in a file cal
  ref_dist_parameters_filename = "${folder_name}${file_prefix}_Chib_Ref_Dist_Params.txt"
  additional_ref_dist_filename="${folder_name}${file_prefix}_Chib_Additional_Disp.txt" # output filename for the additional file for evaluating the density of the reference distribution for dispersion
  prop_simple_filename="${folder_name}${file_prefix}_Chib_Prop_Simple.txt" # output filename for estimating the normalising constant of the reference distribution
-
-String[] args1 = new String[21];
-        //arguments for the posterior MCMC sims -- may want to use different parameters for the posterior and reference dists
-        args1[0] = args[0]; //data filename
-        args1[1] = args[1]; //source tree filename
-        args1[2] = "0.0"; // // Initial squ root t_0 - delete this option eventually
-        args1[3] = "20"; // Num steps
-        args1[4] = "344"; // Seed
-        args1[5] = "-n";
-        args1[6] = "250000"; // Num interations - before thin
-        args1[7] = "-t";
-        args1[8] = "20"; // thin
-        args1[9] = "-b";
-        args1[10] = "10000"; //burn-in
-        args1[11] = "-o";
-        args1[12] = "/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/MarginalLikelihoods/MultiplePointTest/Post.txt"; //file_name to store posterior sims
-        args1[13] = "-pbg";
-        args1[14] = "0.01"; //geometric length partial bridge proposal parameter
-        args1[15] = "-ptr";
-        args1[16] = "0.5"; // dispersion log random walk proposal parameter
-        args1[17] = "-prd"; //whether to parametrise the lognormal reference distribution for t0: 1 for yes 0 for no -- advisable to do so
-        args1[18] = "1";
-        args1[19] =""; //file to store the parameters of the t0 reference distribution in
-        args1[20] =""; //file to store the new t0 densities (for the reference dist) in 
-
-        
-       
-        String[] args2 = new String[19];
-        //arguments for the ref dist MCMC sims -- may want to use different parameters for the posterior and reference dists
-        args2[0] = args1[0];
-        args2[1] = args1[1];
-        args2[2] = "0.0"; //Initial squ root t_0 - delete this option eventually
-        args2[3] = args1[3]; // Num steps
-        args2[4] = "0.0"; //Placeholder for reference dist params
-        args2[5] = "0.0"; //Placeholder for reference dist params
-        args2[6] = "897"; // Seed
-        args2[7] = "-n";
-        args2[8] = "250000"; // Num interations - before thin
-        args2[9] = "-t";
-        args2[10] = "20"; // thin
-        args2[11] = "-b";
-        args2[12] = "10000";//burnin
-        args2[13] = "-o";
-        args2[14] = "";//output filename for simple indep props via MCMC
-        args2[15] = "-pbg";
-        args2[16] = "0.01"; //geometric length partial bridge proposal parameter
-        args2[17] = "-ptr"; //dispersion log random walk proposal parameter
-        args2[18] = "0.5";
-        
-        String[] args3 = new String[8];
-        //arguments for calculating the proportion of simple proposals
-        args3[0] = args1[0];
-        args3[1] = args1[1];
-        args3[2] = ""; // OutFileName
-        args3[3] = "0.0"; //Placeholder for reference dist params
-        args3[4] = "0.0"; //Placeholder for reference dist params
-        args3[5] = "200"; //numDisps
-        args3[6] = "500"; //numProps
-        args3[7] = args1[3]; //num steps
 	
 #run the MCMC and independence proposals
 args=(
@@ -399,14 +340,15 @@ Given a set of unrooted phylogenetic trees in Newick string format in a file cal
  source_tree_filename = "Example_source.txt"
  data_filename="${folder_name}${file_prefix}.txt" # data filename
  source_tree_filename="${folder_name}${source_tree_filename}" # data filename
- posterior_filename="${folder_name}${file_prefix}_Chib_Post.txt" # output filename for the samples from the posterior
- props_filename="${folder_name}${file_prefix}_Chib_Props.txt" # output filename for the samples from the proposals
+ fixed_disp_posterior_filename="${folder_name}${file_prefix}_Chib_TwoBlock_Post_Fixed.txt" # output filename for the samples from the posterior with fixed dispersion
+ props_filename="${folder_name}${file_prefix}_Chib_Two_Block_Props.txt" # output filename for the samples from the proposals
+ full_posterior_filename="${folder_name}${file_prefix}_Chib_Two_Block_Post_Full.txt" # output filename for the samples from the proposals
 
 #run the MCMC and independence proposals
 args=(
         $data_filename
         $source_tree_filename
-        "0.13" # squ root t_0
+        "0.2" # t_0 proposal param in the middle distribution
         "50" # Num steps
         "1260" # Seed
         "-n" #
@@ -416,12 +358,25 @@ args=(
         "-b" #
         "100000" # burn-in
         "-o" # 
-        $posterior_filename # output file for the posterior
+        $fixed_disp_posterior_filename # output file for the posterior
         "-pbg" # 
         "0.05" # partial bridge proposal parameter
         "-numProps" # 
         "50000" # Num independence proposals to run
         $props_filename # output file for the proposals
+		"897" # Seed - full posterior sims
+        "-n" # 
+        "250000" # Num interations - before thin - full posterior sims
+        "-t" # 
+        "20" # thin - full posterior sims
+        "-b" # 
+        "5000" # burnin - full posterior sims
+        "-o";
+        $full_posterior_filename # full posterior file name
+        "-pbg" # 
+        "0.01" # partial bridge proposal with geometric length - full posterior sims
+        "-ptr" # 
+        "0.5" # t0 log random walk proposal - full posterior sims
         )
         
 java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodsWithDisp/ChibTwoBlock "${args[@]}"
