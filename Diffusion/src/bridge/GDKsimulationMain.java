@@ -1,5 +1,6 @@
 /*
-GDKsimulationMain
+GDKSimulationMain
+>>>>>>> 9326c42338de26f6a866256b3baa4f195ce299d6
     Copyright (C) 2025  William M Woodman
 
     This program is free software: you can redistribute it and/or modify

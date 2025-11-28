@@ -1,8 +1,8 @@
 #!/bin/bash
  
  data_filename="./YeastData/yeast_new_ints.txt" # x0 tree filename
- source_tree_filename="./YeastData/yeast_new_ints_MCMCOutv2_splitModes_Tree.txt" # data filename
- posterior_filename="./YeastData/yeast_new_ints_MCMCOutv2_splitModes_Tree_StepStone_test0624" # output file for the posterior
+ source_tree_filename="./YeastData/yeast_new_ints_MCMCOutput_ModeTree.txt" # data filename
+ posterior_filename="./YeastData/yeast_new_ints_MCMCOutput_ModeTree_StepStone" # output file for the posterior
 
 
 args=(
@@ -12,11 +12,11 @@ args=(
         "50" # Num steps
         "1802" # Seed
         "-n" # 
-        "50" # "10000" # Num interations - before thin
+        "10000" # Num interations - before thin
         "-t" # 
-        "1" # "20" # thin
+        "20" # thin
         "-b" # 
-        "100" # "10000" # burn-in
+        "10000" # burn-in
         "-o" # 
         $posterior_filename #posterior output files 
         "-pbg" # 
