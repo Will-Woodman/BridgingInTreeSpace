@@ -86,13 +86,13 @@ public class AuxilliaryMethods {
                 boolean Found=false;
                 while(!Found){
                     if(ss[j].equals("Dispersion")||ss[j].equals("dispersion")){
-                        System.out.println(ss[j]);
+                        //System.out.println(ss[j]);
                         Ind = j;//jth column of the file contains t0 values
                         Found = true;
                     }
 
                     else{
-                        System.out.println(ss[j]);
+                        //System.out.println(ss[j]);
                         j=j+1;
                     }
                 }
@@ -124,9 +124,8 @@ public class AuxilliaryMethods {
          for(int i=0;i<numTrees;i++){
             TreePair theTreePair = new TreePair(theTrees.get(i),mu);
          totalSquDist+= theTreePair.squDist;
-         System.out.println(theTreePair.squDist);
+         //System.out.println(theTreePair.squDist); - information about the data set but usually no need to print this
         }
-         System.out.println((double)((mu.getNumTaxa()-3)*numTrees));
          return(totalSquDist/((double)((mu.getNumTaxa()-3)*numTrees)));
          
      }

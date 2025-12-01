@@ -142,7 +142,7 @@ public class TunnelSamplingDisp {
        double centralt0=AuxilliaryMethods.getFrechetVariance(x0, theData.theTrees);
        t0=centralt0;
        
-       System.out.println(centralt0+"FrechVar");
+       System.out.println(centralt0+" Frechet variance of data about x0");
        //get the reference distribution on t0: this is overwritten when we parametrise the reference distribution after the run
        double mu = Math.log(1.25 * centralt0);
        double sigmaRho = Math.sqrt(mu - Math.log(centralt0));
@@ -333,7 +333,6 @@ public class TunnelSamplingDisp {
         if(parametrise==1){
             try {
                         Double[] RefDistParams = AuxilliaryMethods.getRefDistParameters(outFile);
-                        System.out.println(RefDistParams[0]+" mu "+RefDistParams[1]+" sigmaRho");
                         File RefDistOutputFile = new File(RefDistFileName);
                         File NewT0DensFile = new File(NewT0FileName);
         //save reference dist parameters to a file       
@@ -428,7 +427,7 @@ public class TunnelSamplingDisp {
         args1[0] = args[0]; //data filename
         args1[1] = args[1]; //source tree filename
         args1[2] = "0.0"; // // Initial squ root t_0 - delete this option eventually
-        args1[1] = args[2]; // Num steps
+        args1[3] = args[2]; // Num steps
         args1[4] = args[3]; // Seed
         args1[5] = args[4];
         args1[6] = args[5]; // Num interations - before thin
@@ -482,7 +481,7 @@ public class TunnelSamplingDisp {
         args3[6] = args[35]; //numProps
         args3[7] = args1[3]; //num steps
         
-        
+            System.out.println("Starting posterior sims");
             parseCommandLine(args1);//simulate from the posterior
             try {
             Double[] RefDistParams = AuxilliaryMethods.getRefDistParameters(args1[12]);
@@ -490,7 +489,6 @@ public class TunnelSamplingDisp {
             args2[5]=Double.toString(RefDistParams[1]);
             args3[3]=Double.toString(RefDistParams[0]);
             args3[4]=Double.toString(RefDistParams[1]);
-            System.out.println(args2[4]+" mu "+args2[5]+" sigmaRho");
             //if reference distribution is calculated in this way, then need to recalculate the values of the reference distribution
             //in the posterior sample:
 
@@ -501,13 +499,14 @@ public class TunnelSamplingDisp {
           
          
         try {
+            System.out.println("Starting prop simple sims");
             System.out.println(ProportionOfSimpleProposalsDispForTunnel.propSimple(args3));
         } catch (IOException ex) {
             System.out.println("Error calculating proportion of simple proposals");
             Logger.getLogger(TunnelSamplingDisp.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-
+            System.out.println("Starting ref dist sims");
             TunnelSamplingProposal.simConditionalProposal(args2);//simulate from the reference distribution
          
        

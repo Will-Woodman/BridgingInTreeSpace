@@ -127,7 +127,7 @@ public class SteppingStonePosteriorExploration {
         double rateForT0Prior = 18.44*((double)(initialTree.numTaxa()-3))/((double)(initialTree.numTaxa()));
         DensityCalculator t0Prior = new PositiveParameter.ExponentialPrior(rateForT0Prior);
         
-        centralt0=getFrechetVariance(x0, theData.theTrees);
+        centralt0=MarginalLikelihoods.AuxilliaryMethods.getFrechetVariance(x0, theData.theTrees);
         //placeholder distribution for the reference distribution on t0
         if(mu==0){
 
@@ -336,18 +336,6 @@ public class SteppingStonePosteriorExploration {
     } 
     
         
-    public static Double getFrechetVariance (TreeAsSplits mu, ArrayList<TreeAsSplits> theTrees) throws AlgorithmError{
-         int numTrees= theTrees.size();
-         double totalSquDist=0;
-         for(int i=0;i<numTrees;i++){
-            TreePair theTreePair = new TreePair(theTrees.get(i),mu);
-         totalSquDist+= theTreePair.squDist;
-         System.out.println(theTreePair.squDist);
-        }
-         System.out.println((double)((mu.getNumTaxa()-3)*numTrees));
-         return(totalSquDist/((double)((mu.getNumTaxa()-3)*numTrees)));
-         
-     }
     
       private static class TreePair{
       TreeAsSplits treeA;

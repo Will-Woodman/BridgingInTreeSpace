@@ -154,7 +154,7 @@ public class TunnelSamplingProposal {
        mu = Math.log(1.25 * centralt0);
        sigmaRho = Math.sqrt(mu - Math.log(centralt0));
        }
-       System.out.println(mu+" "+sigmaRho);
+       //System.out.println(mu+" "+sigmaRho);
        DensityCalculator t0Dist = new PositiveParameter.LogNormalPrior(mu,sigmaRho);
        //set initial t0 to be the mean of the lognormal distribution:
        t0=Math.exp(mu +sigmaRho*sigmaRho );

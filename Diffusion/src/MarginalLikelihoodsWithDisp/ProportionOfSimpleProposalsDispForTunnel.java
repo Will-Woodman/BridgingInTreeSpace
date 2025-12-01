@@ -89,7 +89,7 @@ public class ProportionOfSimpleProposalsDispForTunnel {
         try {
             RefDistParams[0] = Double.parseDouble(args[3]);
             RefDistParams[1] = Double.parseDouble(args[4]);
-            System.out.print("Ref dist params for prop simple = "+String.format("%7.7f", RefDistParams[0])+" "+String.format("%7.7f", RefDistParams[1]));
+            //System.out.print("Ref dist params for prop simple = "+String.format("%7.7f", RefDistParams[0])+" "+String.format("%7.7f", RefDistParams[1]));
         }
         catch (NumberFormatException anErr) {
             System.out.println("Unable to read number of proposals to use for the estimate of the proportion of simple proposals.");
@@ -122,7 +122,7 @@ public class ProportionOfSimpleProposalsDispForTunnel {
             System.exit(1);
         }
 
-       System.out.println(RefDistParams[0]+" "+RefDistParams[1]);
+       //System.out.println(RefDistParams[0]+" "+RefDistParams[1]);
        LogNormalDistribution t0Dist = new LogNormalDistribution(RefDistParams[0],RefDistParams[1]);
        
        //set up the fixed values of t_0 at which to estimate the proportion of simple proposals
@@ -155,14 +155,14 @@ public class ProportionOfSimpleProposalsDispForTunnel {
 
         
         int n= Data.numTrees;
-        System.out.println(n);
+        //System.out.println(n);
         for(int i=0; i<numDisps;i++){
             outProp = propSimpleSingleDisp(numProps,startTree, Data,m,disp[i]);
             outProps[i]=0;
             for(int j=1;j<n;j++){
                 outProps[i]+=outProp[j];//sum up the log proportions
             }
-            System.out.println(Math.exp(outProps[i]));
+            //System.out.println(Math.exp(outProps[i]));
         }
         
         double output = 0;

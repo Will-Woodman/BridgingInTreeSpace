@@ -123,7 +123,7 @@ public class SteppingStoneSamplingDisp {
             System.exit(1);
         }
         TreeAsSplits x0 = new TreeAsSplits(initialTree);
-        if(args[2]=="FV"){//usually input FV so that the initial value for t0 is the Frechet variance about x0
+        if("FV".equals(args[2])){//usually input FV so that the initial value for t0 is the Frechet variance about x0
          centralt0=AuxilliaryMethods.getFrechetVariance(x0, theData.theTrees);
          System.out.println(centralt0+"FrechVar");
          t0=centralt0;
@@ -365,7 +365,7 @@ public class SteppingStoneSamplingDisp {
         /* Build the sweep proposal */
         KernelWrapper myKernelWrapper = new SweepKernelWrapper("Overall proposal", kernelWrapperList);
        
-        System.out.println(initialState[0].getLogLikelihood()+" p");
+        System.out.println(initialState[0].getLogLikelihood()+" initial log likelihood at beta= "+betas[j]);
         /* Run the chain */
         Chain myChain = new Chain(initialState[0], initialState[1], myKernelWrapper);
         myChain.run(nits, burnits, thin, outFile);
@@ -385,17 +385,13 @@ public class SteppingStoneSamplingDisp {
         for(int k=0;k<numSteps+1;k++){
             finalBridgeAsStrings[k]=finalBridgeAsStrings[k]+";";
             finalBridgeTrees[k]=new TreeAsSplits(new Tree(finalBridgeAsStrings[k]));
-            System.out.println(finalBridgeTrees[k].toString());
+            //System.out.println(finalBridgeTrees[k].toString()); - uncomment if you want to print out the final bridges for each beta
         }
         
         
         BridgeWithStepStoneLike finalBridge = new BridgeWithStepStoneLike(finalBridgeTrees,betas[j+1]);
-        for(int k=0;k<numSteps+1;k++){
-            System.out.println(finalBridge.getTreePathList().get(k));
-        }
-        System.out.println("check final t0 "+finalt0);
+
         finalBridge.setLogLikes(finalt0);
-        System.out.println(finalBridge.getTotalLogLike());
         
         
         finalBridges.add(new BridgeState(finalBridge,bridgeName));

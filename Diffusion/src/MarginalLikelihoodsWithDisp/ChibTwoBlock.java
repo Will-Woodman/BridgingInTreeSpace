@@ -141,7 +141,7 @@ public class ChibTwoBlock {
        double centralt0=AuxilliaryMethods.getFrechetVariance(x0, theData.theTrees);
        t0=centralt0;
        
-       System.out.println(centralt0+"FrechVar");
+       System.out.println(centralt0+" Frechet variance at x0");
        //proposal used in the calculation 
        RealParameterProposal t0Dist = new PositiveParameter.LogNormalProposal(delta);
        DensityCalculator thePrior = new BrownianStateForBridgingTunnel.ChibBrownianStatePrior(t0Prior,t0Dist);
@@ -335,7 +335,7 @@ public class ChibTwoBlock {
             }
             logLike += theBridges.get(i).getTotalLogLike();
            if(propDens==Double.NEGATIVE_INFINITY){
-               System.out.println("Why?");
+               System.out.println("Negative infinity proposal density - there is an error in the calculation");
            }
             
             
@@ -458,8 +458,9 @@ out.println();
         args2[15] = args[29];
         args2[16] = args[30];//t0 log random walk proposal - full posterior sims
 
-        
+          System.out.println("Simulating the fixed t0 posterior and proposals");
           parseCommandLine(args1);//fixed t0 sims
+          System.out.println("Simulating the full posterior");
           ChibFirstBlock.simFullPosterior(args2);//full posterior sims
         
 
