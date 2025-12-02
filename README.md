@@ -134,6 +134,24 @@ java -cp "./dist/BridgingInTreeSpace.jar" topologies/edgeLengthsModalTop "${args
 
 ``` </pre>
 
+If you have built the mode tree using R you will have outputted a list of splits with their lengths. We can turn this into a phylogenetic tree in Newick string form using the following shell script:
+
+<pre> ```
+	
+#!/bin/bash
+splits_filename="./YeastData/yeast_new_ints_MCMCOutput_splitModes.txt"
+modal_tree_filename="./YeastData/yeast_new_ints_MCMCOutout_ModeTree.txt"
+frechet_mean_filename="./YeastData/yeast_new_ints_FM.txt"
+
+#build and save the modal tree:
+args=(
+        $splits_filename # modal splits
+        $modal_tree_filename # modal tree output file
+        )
+        
+java -cp "./dist/BridgingInTreeSpace.jar" topologies.BuildModeTree "${args[@]}"
+``` </pre>
+
 </details>
 
 ### Marginal likelihood for fixed dispersion - Chib and tunnel
