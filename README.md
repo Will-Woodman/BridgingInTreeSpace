@@ -12,6 +12,7 @@
   - [Marginal likelihood for unknown dispersion - Chib Two Block](#marginal-likelihood-for-unknown-dispersion---chib-two-block)
   - [Simulating from the Gaussian kernel distribution using MCMC](#simulating-from-the-gaussian-kernel-distribution-using-mcmc)
   - [Noisy MCMC for topology inference](#noisy-mcmc-for-topology-inference)
+  - [Assessing the number of random walk steps by forward simulation](#assessing-the-number-of-random-walk-steps-by-forward-simulation)
     
 ## Installation
 Simulating from the Gaussian kernel distribution using MCMC
@@ -573,6 +574,68 @@ topsData<-topsData[order(topsData$Count,decreasing=TRUE),]
 
 ggplot(topsData)+geom_col(aes(x=Topology,y=Props))+scale_x_discrete(limits=topsData$Topology) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=8))+
   xlab('Topology')+ylab('Proportion')
+
+```
+
+</details>
+
+
+### Assessing the number of random walk steps by forward simulation
+<details>
+<summary>⭐ show/hide</summary>
+In this section we give details on how to reproduce the analysis in the thesis on how many random walk steps are required to approximate a Brownian motion kernel by forward simulating random walks with different numbers of steps, using both the standard random walk innovations and the innovations defined using the exact distribution on the three spider.
+
+```bash
+#!/bin/bash
+folder_name="./Example_folder/"
+tree_filename="${folder_name}_simulated_source_tree.txt" # file containing list of splits and lengths
+exact_dist_counts_filename="${folder_name}topology_counts_exact.txt" # file containing list of splits and lengths
+standard_dist_counts_filename="${folder_name}topology_counts_standard.txt" # file containing list of splits and lengths
+
+#build and save the modal tree:
+args=(
+        $exact_dist_counts_filename # modal tree output file
+        $tree_filename # modal splits
+        "10" #number of taxa for the source tree
+	"10 50 100" #number of steps to use in the random walks
+	"1.0" # value of dispersion to use in the random walks
+        "10000" # number of random walks to simulate for each number of steps
+        "2.0" # shape parameter in gamma dist for source tree edge lengths
+        "1.4" # scale parameter in gamma dist for source tree edge lengths
+        "true" # whether to sample the steps using the exact dist on the three spider
+        "104" # seed for the random number generator 
+        )
+        
+java -cp "./dist/BridgingInTreeSpace.jar" simulateMultipleTopologies.investigateNoOfWalkStepsLoop "${args[@]}"
+
+args=(
+        $standard_dist_counts_filename # modal tree output file
+        $tree_filename # modal splits
+        "10" #number of taxa for the source tree
+	"10 50 100" #number of steps to use in the random walks
+	"1.0" # value of dispersion to use in the random walks
+        "10000" # number of random walks to simulate for each number of steps
+        "2.0" # shape parameter in gamma dist for source tree edge lengths
+        "1.4" # scale parameter in gamma dist for source tree edge lengths
+        "False" # whether to sample the steps using the exact dist on the three spider
+        "104" # seed for the random number generator -- leave the same to use the same tree
+        )
+        
+
+java -cp "./dist/BridgingInTreeSpace.jar" simulateMultipleTopologies.investigateNoOfWalkStepsLoop "${args[@]}"
+
+```
+
+A minimal example R script for reproducing the plots in the thesis that show the spread of topologies in the simulated trees and the distribution of distances to the source is given in the following:
+
+```r
+##read in and plot the count data for the standard innovations
+countData<-read.delim("Example_folder/topology_counts_standard.txt",header=TRUE,sep=" ")
+ggplot(countData)+geom_col(aes(x=Steps,y=Topologies)) + ggtitle("Number of topologies by steps standard distribution")
+
+##read in and plot the count data for the innovations that use the exact distribution on the three spider
+countData<-read.delim("Example_folder/topology_counts_exact.txt",header=TRUE,sep=" ")
+ggplot(countData)+geom_col(aes(x=Steps,y=Topologies)) + ggtitle("Number of topologies by steps exact distribution")
 
 ```
 
