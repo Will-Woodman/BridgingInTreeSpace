@@ -3,8 +3,8 @@
 ## Table of Contents
 - [Installation](#installation)
 - [Running the inference procedures](#running-the-inference-procedures)
-  - [Posterior inference using bridges](#posterior-inference-using-bridges)
   - [Simulating a data set under the model](#simulating-a-data-set-under-the-model)
+  - [Posterior inference using bridges](#posterior-inference-using-bridges)
   - [Noisy MCMC for topology inference](#noisy-mcmc-for-topology-inference)
   - [Marginal likelihood for fixed dispersion - Chib and Tunnel](#marginal-likelihood-for-fixed-dispersion---chib-and-tunnel)
   - [Marginal likelihood for fixed dispersion - Stepping Stone](#marginal-likelihood-for-fixed-dispersion---stepping-stone)
