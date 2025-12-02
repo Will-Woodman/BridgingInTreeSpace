@@ -5,13 +5,14 @@
 - [Running the inference procedures](#running-the-inference-procedures)
   - [Simulating a data set under the model](#simulating-a-data-set-under-the-model)
   - [Posterior inference using bridges](#posterior-inference-using-bridges)
-  - [Noisy MCMC for topology inference](#noisy-mcmc-for-topology-inference)
   - [Marginal likelihood for fixed dispersion - Chib and Tunnel](#marginal-likelihood-for-fixed-dispersion---chib-and-tunnel)
   - [Marginal likelihood for fixed dispersion - Stepping Stone](#marginal-likelihood-for-fixed-dispersion---stepping-stone)
   - [Marginal likelihood for unknown dispersion - Chib one block and Tunnel](#marginal-likelihood-for-unknown-dispersion---chib-one-block-and-tunnel)
   - [Marginal likelihood for unknown dispersion - Stepping Stone](#marginal-likelihood-for-unknown-dispersion---stepping-stone)
   - [Marginal likelihood for unknown dispersion - Chib Two Block](#marginal-likelihood-for-unknown-dispersion---chib-two-block)
   - [Simulating from the Gaussian kernel distribution using MCMC](#simulating-from-the-gaussian-kernel-distribution-using-mcmc)
+  - [Noisy MCMC for topology inference](#noisy-mcmc-for-topology-inference)
+    
 ## Installation
 Simulating from the Gaussian kernel distribution using MCMC
 
@@ -22,6 +23,8 @@ An RMarkdown file of the same name is given in the source code to reproduce the 
 
 The code can be downloaded from this Github repository and run from the command line. The easiest way to do this is with .sh files, where we can specify the various parameters required for the MCMC algorithms. The rest of this readme gives example shell scripts and parameters for running the different MCMC algorithms.
 
+We alse give minimal examples of R scripts used to produce the analysis of MCMC runs, although it is likely that any analysis of MCMC runs will be bespoke.
+
 ## Running the inference procedures
 
 ### Simulating a data set under the model
@@ -29,7 +32,7 @@ The code can be downloaded from this Github repository and run from the command 
 <summary>⭐ show/hide</summary>
 This file will simulate a random source tree called Example_source in a folder called Example_folder with a specifed number N of taxa from a coalescent model (with edges resampled from a Gamma distributionwith shape-scale parametrisation). It will then produce a data set of n trees by simulating random walks with m steps, started at the source tree and a specified value of dispersion. It also outputs the topologies of the source tree and data as well as geodesic and Robinson Foulds distances from the source tree to the data points.
 
-<pre> ```
+```bash
 #!/bin/bash
 ##filenames
 file_prefix="Example_trees"
@@ -58,7 +61,7 @@ args=(
 )
 
 java -cp "./dist/BridgingInTreeSpace.jar" simulateTops/simulateSourceTree "${args[@]}"
-``` </pre>
+```
 
 </details>
 
@@ -68,7 +71,7 @@ java -cp "./dist/BridgingInTreeSpace.jar" simulateTops/simulateSourceTree "${arg
 <summary>⭐ show/hide</summary>
 Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, withina folder called Example_folder, posterior inference can be run using a .sh script in the following form, where the parameters followed by a comment can be modifed as required:
 
-<pre> ```
+```bash
 #!/bin/bash
 ##filenames
 file_prefix="Example_trees"
@@ -132,25 +135,25 @@ args=(
 java -cp "./dist/BridgingInTreeSpace.jar" topologies/edgeLengthsModalTop "${args[@]}"
 
 
-``` </pre>
+```
 
 If you have built the mode tree using R you will have outputted a list of splits with their lengths. We can turn this into a phylogenetic tree in Newick string form using the following shell script:
 
-<pre> ```
-	
+```bash
 #!/bin/bash
-splits_filename="./YeastData/yeast_new_ints_MCMCOutput_splitModes.txt"
-modal_tree_filename="./YeastData/yeast_new_ints_MCMCOutout_ModeTree.txt"
-frechet_mean_filename="./YeastData/yeast_new_ints_FM.txt"
+file_prefix="Example_trees"
+folder_name="./Example_folder/"
+splits_filename="${folder_name}${file_prefix}_MCMCOutput_mode_tree_edges.txt" # file containing list of splits and lengths
+modal_tree_filename="${folder_name}${file_prefix}_MCMCOutput_mode_tree.txt"   # output file to store the mode tree
 
-#build and save the modal tree:
+# build and save the modal tree:
 args=(
-        $splits_filename # modal splits
-        $modal_tree_filename # modal tree output file
-        )
-        
+    $splits_filename     # modal splits
+    $modal_tree_filename  # modal tree output file
+)
+
 java -cp "./dist/BridgingInTreeSpace.jar" topologies.BuildModeTree "${args[@]}"
-``` </pre>
+```
 
 </details>
 
@@ -160,7 +163,7 @@ java -cp "./dist/BridgingInTreeSpace.jar" topologies.BuildModeTree "${args[@]}"
 <summary>⭐ show/hide</summary>
 Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder, to estimate the marginal likelihood using the Chib and tunnel (bridge) methods for a fixed value of dispersion and a fixed source tree given in the file Example_source.txt, a .sh script of the form specified below can be run. Parameters followed by a comment can be modifed as required.
 
-<pre> ```
+```bash
 file_prefix="Example_trees"
 folder_name="./Example_folder/"
 source_tree_filename="Example_source.txt"
@@ -203,7 +206,7 @@ java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/ChibJel
 
 java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/BridgeSamplingEstimate "${args[@]}"  >> ${folder_name}${file_prefix}_FixedTunnelEst.txt #replace with file name for storing the tunnel estimate
 
-``` </pre>
+```
 </details>
 
 ### Marginal likelihood for fixed dispersion - Stepping Stone
@@ -212,7 +215,7 @@ java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/BridgeS
 <summary>⭐ show/hide</summary>
 Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder, to estimate the marginal likelihood using the stepping stone method for a fixed value of dispersion and a fixed source tree given in the file Example_source.txt, a .sh script of the form specified below can be run. Parameters followed by a comment can be modifed as required.
 
-<pre> ```
+```bash
 #!/bin/bash
  
  file_prefix="Example_trees"
@@ -251,7 +254,7 @@ args=(
         
 java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/StepStoneEstimate "${args[@]}" >> ${folder_name}${file_prefix}_Fixed_Disp_StepStoneEst.txt #file name for storing the stepping stone estimate
 
-``` </pre>
+```
 </details>
 
 ### Marginal likelihood for unknown dispersion - Chib one block and tunnel
@@ -260,7 +263,7 @@ java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/StepSto
 <summary>⭐ show/hide</summary>
 Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder, to estimate the marginal likelihood using the Chib one block and tunnel (bridge) methods where the dispersion is considered an unknown nuisance parameter and a fixed source tree is given in the file Example_source.txt, a .sh script of the form specified below can be run. Parameters followed by a comment can be modifed as required.
 
-<pre> ```
+```bash
 #!/bin/bash
  
  file_prefix="Example_trees"
@@ -330,7 +333,7 @@ java -cp "./dist/BridgingInTreeSpace.jar" MarginaLikelihoodCalculationsWithDisp/
 
 java -cp "./dist/BridgingInTreeSpace.jar" MarginaLikelihoodCalculationsWithDisp/TunnelSamplingEstimateDisp "${args[@]}"  >> ${folder_name}${file_prefix}TunnelEst.txt #replace with file name for storing the tunnel estimate
 
-``` </pre>
+```
 </details>
 
 
@@ -341,7 +344,7 @@ java -cp "./dist/BridgingInTreeSpace.jar" MarginaLikelihoodCalculationsWithDisp/
 <summary>⭐ show/hide</summary>
 Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder, to estimate the marginal likelihood using the stepping stone method where the dispesion is consider an unknown nuisance parameter and a fixed source tree is given in the file Example_source.txt, a .sh script of the form specified below can be run. Parameters followed by a comment can be modifed as required.
 
-<pre> ```
+```bash
 #!/bin/bash
 
  file_prefix="Example_trees"
@@ -400,7 +403,7 @@ args=(
         
 java -cp "./dist/BridgingInTreeSpace.jar" MarginaLikelihoodCalculationsWithDisp/StepStoneEstimateDisp "${args[@]}" >> ${folder_name}${file_prefix}StepStoneEst.txt #file name for storing the Chib estimate
 
-``` </pre>
+```
 </details>
 
 
@@ -410,7 +413,7 @@ java -cp "./dist/BridgingInTreeSpace.jar" MarginaLikelihoodCalculationsWithDisp/
 <summary>⭐ show/hide</summary>
 Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder, to estimate the marginal likelihood using the Chib two block method where the dispersion is considered an unknown nuisance parameter and a fixed source tree given in the file Example_source.txt, a .sh script of the form specified below can be run. Parameters followed by a comment can be modifed as required.
 
-<pre> ```
+```bash
 #!/bin/bash
  
  file_prefix="Example_trees"
@@ -469,7 +472,7 @@ args=(
 
 java -cp "./dist/BridgingInTreeSpace.jar" MarginaLikelihoodCalculationsWithDisp/ChibTwoBlockEstimate "${args[@]}"  >> ${folder_name}${file_prefix}_ChibTwoBlockEst.txt #replace with file name for storing the Chib estimate
 
-``` </pre>
+```
 </details>
 
 
@@ -480,7 +483,7 @@ java -cp "./dist/BridgingInTreeSpace.jar" MarginaLikelihoodCalculationsWithDisp/
 
 Suppose we are given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder. To run the noisy MCMC algorithm for inferring the species tree when gene trees are modelled as draws from a Brownian motion kernel (approximated by a random walk kernel), run a .sh script of the following form (note that in this analysis we manually input an initial tree):
 
-<pre> ```
+```bash
 #!/bin/bash
 ##filenames
 file_prefix="Example_trees"
@@ -510,7 +513,7 @@ args=(
 
 java -cp "./dist/BridgingInTreeSpace.jar" topologies/InferParamsViaApproxLike "${args[@]}"
 	
-``` </pre>
+```
 
 
 </details>
@@ -520,7 +523,7 @@ java -cp "./dist/BridgingInTreeSpace.jar" topologies/InferParamsViaApproxLike "$
 <summary>⭐ show/hide</summary>
 Given an unrooted phylogenetic tree in Newick string format in a file called Example_tree.txt, within a folder called Example_folder, we can simulate from a Gaussian kernel, as in the paper [kdetrees: non-parametric estimation of phylogenetic tree distributions](https://academic.oup.com/bioinformatics/article/30/16/2280/2748204) a .sh script in the following form, where the parameters followed by a comment can be modifed as required:
 
-<pre> ```
+```bash
 #!/bin/bash
 ##filenames
 file_prefix="Example_tree"
@@ -546,7 +549,32 @@ args=(
 
 java -cp "./dist/BridgingInTreeSpace.jar" bridge/GDKsimulationMain "${args[@]}"
 
-``` </pre>
+```
+
+A minimal example R script for reproducing the plots in the thesis that show the spread of topologies in the simulated trees and the distribution of distances to the source is given in the following:
+
+```r
+Nprime<-2
+source_tree_prefix<-"Example_source"
+dists<-read.delim(paste0(folder,"/", source_tree_prefix,"_GKD_Sims_distances.txt"),header=FALSE)
+chiComp<-function(x){
+  return(dchisq(x,Nprime))
+}
+
+ggplot(dists)+geom_density(aes(x=as.numeric(V1)^2,colour='GKD'))+geom_function(aes(x=V1,colour='chiSqu'),fun = chiComp)+
+  xlab("distance")+ylab('density')+xlim(0,10)
+
+#plot the topologies in the ouput:
+topsData<-read.delim(paste0(folder,"/", source_tree_prefix,"_GKD_Sims_tops.txt"),header=FALSE,sep=" ")
+colnames(topsData)<-c("Topology","Count")
+topsData$Count = as.numeric(topsData$Count)
+topsData<-topsData %>% mutate(Props = topsData$Count/sum(topsData$Count))
+topsData<-topsData[order(topsData$Count,decreasing=TRUE),]
+
+ggplot(topsData)+geom_col(aes(x=Topology,y=Props))+scale_x_discrete(limits=topsData$Topology) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=8))+
+  xlab('Topology')+ylab('Proportion')
+
+```
 
 </details>
 
