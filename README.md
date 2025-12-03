@@ -641,4 +641,133 @@ ggplot(countData)+geom_col(aes(x=Steps,y=Topologies)) + ggtitle("Number of topol
 
 </details>
 
+### Tuning the bridge proposal
+<details>
+<summary>⭐ show/hide</summary>
+In this section we give details on how to simulate a fixed number of iterations of MCMC for a bridge between two fixed endpoints in tree space. However, outputing the topology at each step of the bridge and changing the parameters used in the bridge proposal requires directly modifying the code and so anyone who wanted to repeat the full analysis would need to create a project in an IDE such as Netbeans including the code provided in this repository and make manual changes to the code. Anyone who wants to do this would be advised to contact the author.
 
+```bash
+#!/bin/bash
+##filenames
+file_prefix="Example_trees"
+folder_name="./Example_folder/"
+source_filename="${folder_name}$SourceTree1.txt" # data filename
+target_filename="${folder_name}$TargetTree1.txt" # data filename
+output_filename="${folder_name}$Trees1_NoPen_MCMCOutput.txt"
+
+#Run the MCMC:
+args=(
+	$target_filename #target tree filename
+	$source_filename #source tree filename
+	"0.5" # Initial squ root t_0
+	"50" # Num steps
+	"1051" # Seed
+	"-n" #
+	"400000" # Num interations
+	"-t"
+	"100" # thin
+	"-b"
+	"10000" #burnin
+	"-o"
+	$output_filename #output file
+	"-pbg"
+	"0.01" #parameter for partial bridge proposal
+)
+
+java -cp "./dist/BridgingInTreeSpace.jar" bridge/InferBrownianParamsMCMC "${args[@]}"
+
+
+```
+
+An example R script for reproducing the plots in the thesis that show the number of topologies in the simulated trees on each step of the bridges is given in the following. This includes printing out the acceptance rates for each MCMC run, producing trace plots for the log likelihood to check issues with convergence and producing the plots showing the different numbers of topologies at each bridge step.
+
+```r
+###R script for processing the output of the independence proposal sims
+#function for getting the number of unique topologies at each step:
+getTheCounts<-function(data,m,name){
+  counts<-c(3:(m+2))
+  for(i in 3:(m+2)){
+    counts[i-2]=length(unique(data[,i]))
+    
+  }
+  counts<-data.frame(c(1:50),counts)
+  colnames(counts)<-c("steps","counts")
+  counts$name<-name
+  return(counts)
+  
+}
+
+#/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/IndepPropTuning/10Taxa20240910/Trees1_Variable_MCMCoutv1.txt
+
+m<-50
+noOfBridges<-4000
+
+##read in the different data sets and print out the acceptance rates in each MCMC run:
+theData1<-read.delim("/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/IndepPropTuning/10Taxa20240910/Trees1_1TimesPenalty_MCMCoutv1.txt",sep=" ",header=FALSE)
+print(paste0("Acceptance rate for 1 times penalty: ",theData1[4002,10]))
+
+theData2<-read.delim("/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/IndepPropTuning/10Taxa20240910/Trees1_Variable_MCMCoutv1.txt",sep=" ",header=FALSE)
+print(paste0("Acceptance rate for 2 times penalty: ",theData2[4002,10]))
+
+theData3<-read.delim("/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/IndepPropTuning/10Taxa20240910/Trees1_3TimesPenalty_MCMCoutv1.txt",sep=" ",header=FALSE)
+print(paste0("Acceptance rate for 1 times penalty: ",theData3[4002,10]))
+
+theData4<-read.delim("/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/IndepPropTuning/10Taxa20240910/Trees1_NoPen_MCMCOutput.txt",sep=" ",header=FALSE)
+print(paste0("Acceptance rate for no penalty: ",theData4[4002,10]))
+
+##plot traceplots of the log likelihood for each chain to check that there are no issues with convergence
+theLikelihood<-data.frame(cbind(c(1:noOfBridges),theData1[2:(noOfBridges+1),53]))
+colnames(theLikelihood)<-c("Iteration","Likelihood")
+
+print("Plot of the log likelihood for 1 times penalty")
+
+likePlot1<- ggplot(theLikelihood)+geom_line(aes(x=Iteration,y=Likelihood))+ggtitle("1 times penalty")+
+  theme(plot.title = element_text(hjust = 0.5))
+likePlot1
+
+theLikelihood<-data.frame(cbind(c(1:noOfBridges),theData2[2:(noOfBridges+1),53]))
+colnames(theLikelihood)<-c("Iteration","Likelihood")
+
+print("Plot of the log likelihood for 2 times penalty")
+
+likePlot2<- ggplot(theLikelihood)+geom_line(aes(x=Iteration,y=Likelihood))+ggtitle("2 times penalty")+
+  theme(plot.title = element_text(hjust = 0.5))
+likePlot2
+
+theLikelihood<-data.frame(cbind(c(1:noOfBridges),theData3[2:(noOfBridges+1),53]))
+colnames(theLikelihood)<-c("Iteration","Likelihood")
+
+print("Plot of the likelihood for 3 times penalty")
+
+likePlot3<- ggplot(theLikelihood)+geom_line(aes(x=Iteration,y=Likelihood))+ggtitle("3 times penalty")+
+  theme(plot.title = element_text(hjust = 0.5))
+likePlot3
+
+theLikelihood<-data.frame(cbind(c(1:noOfBridges),theData4[2:(noOfBridges+1),53]))
+colnames(theLikelihood)<-c("Iteration","Likelihood")
+
+print("Plot of the log likelihood for 4 times penalty")
+
+likePlot4<- ggplot(theLikelihood)+geom_line(aes(x=Iteration,y=Likelihood))+ggtitle("4 times penalty")+
+  theme(plot.title = element_text(hjust = 0.5))
+likePlot4
+
+##count the number of distinct topologies at each step on the bridge for each MCMC run:
+theCounts1<-getTheCounts(theData1,m,"1 times")
+theCounts2<-getTheCounts(theData2,m,"2 times")
+theCounts3<-getTheCounts(theData3,m,"3 times")
+theCounts4<-getTheCounts(theData4,m,"4 times")
+
+theCounts<-rbind(theCounts1,theCounts2,theCounts3,theCounts4)
+
+print("Counts of the distinct topologies in the posterior sample by step on the bridge (we use 50 steps in the bridges)")
+
+#final plot:
+plotout<-ggplot(theCounts)+geom_line(aes(y=counts,x=steps,linetype=name),position="dodge",size=0.6)+xlab("Step")+ylab("Count")
+plotout<-plotout+theme(axis.title=element_text(size=13),axis.text=element_text(size=11),legend.key.size = unit(1.2, 'cm'),legend.text = element_text(size=11),legend.title=element_blank() )
+plotout <- plotout + labs(linetype="Tree pair")
+plotout
+
+```
+
+</details>
