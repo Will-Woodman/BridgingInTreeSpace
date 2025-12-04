@@ -2,6 +2,7 @@
 
 ## Table of Contents
 - [Installation](#installation)
+- [Summary](#summary)
 - [Running the inference procedures](#running-the-inference-procedures)
   - [Simulating a data set under the model](#simulating-a-data-set-under-the-model)
   - [Posterior inference using bridges](#posterior-inference-using-bridges)
@@ -13,18 +14,24 @@
   - [Simulating from the Gaussian kernel distribution using MCMC](#simulating-from-the-gaussian-kernel-distribution-using-mcmc)
   - [Noisy MCMC for topology inference](#noisy-mcmc-for-topology-inference)
   - [Assessing the number of random walk steps by forward simulation](#assessing-the-number-of-random-walk-steps-by-forward-simulation)
+  - [Tuning the bridge proposal](#tuning-the-bridge-proposal)
     
+
+## Summary
+
+This Github repository includes the code required to perform the statistical inference procedures specified in the paper [Brownian motion, bridges and Bayesian inference in phylogenetic tree space](https://arxiv.org/abs/2506.22135) and my upcoming thesis. Particularly we perform inference in [Billera-Holmes-Vogtmann (BHV) tree space](https://www.sciencedirect.com/science/article/pii/S0196885801907596).
+
+We perform inference for Brownian motion kernels in BHV tree space, as an analogue to the Gaussian distribution in Euclidean space. Much of the methodology relies on simulating Brownian bridges, which are noisy walks conditioned on a source tree and a target tree, in BHV tree space.
+
+A html file called ExperimentalDataRScript and a corresponding RMarkdown file for reproducing the analysis on yeast gene trees detailed in the paper [Brownian motion, bridges and Bayesian inference in phylogenetic tree space](https://arxiv.org/abs/2506.22135) are provided as part of this project. <a href="https://will-woodman.github.io/BridgingInTreeSpace/ExperimentalDataRScript">ExperimentalDataRScript</a>. The html file details how to run the analysis and the RMarkdown file can be used to reproduce the plots seen in the paper. The data required to run the yeast gene tree analysis is provided in the folder YeastData.
+
+The simulated data sets used to perform simulation studies in the thesis are given in this repository in the folder SimulatedDataForThesis.
+
 ## Installation
-Simulating from the Gaussian kernel distribution using MCMC
 
-This Github repository includes the code required to perform the statistical inference procedures specified in the paper [Brownian motion, bridges and Bayesian inference in phylogenetic tree space](https://arxiv.org/abs/2506.22135) and my upcoming thesis.
+The code can be downloaded from this Github repository and run from the command line. In particular the dist folder, which contains all relevant .jar files should be downloaded from this repository. The code has been testing in Java version 17. The easiest way to run the code is with shell script files, where we can specify the various parameters required for the MCMC algorithms. The rest of this readme gives example shell scripts and parameters for running the different MCMC algorithms, where modifiable parameters are clearly commented.
 
-An html file and corresponding RMarkdown file for reproducing the analysis on yeast gene trees detailed in the paper called ExperimentalDataRScript are provided as part of this project. <a href="https://will-woodman.github.io/BridgingInTreeSpace/ExperimentalDataRScript">ExperimentalDataRScript</a>
-An RMarkdown file of the same name is given in the source code to reproduce the results.</li>.
-
-The code can be downloaded from this Github repository and run from the command line. The easiest way to do this is with .sh files, where we can specify the various parameters required for the MCMC algorithms. The rest of this readme gives example shell scripts and parameters for running the different MCMC algorithms.
-
-We alse give minimal examples of R scripts used to produce the analysis of MCMC runs, although it is likely that any analysis of MCMC runs will be bespoke.
+We alse give minimal examples of R scripts used to produce the analysis of MCMC runs. However, it is likely that any future analysis of MCMC runs will be bespoke so these scripts are non-exhaustive.
 
 ## Running the inference procedures
 
@@ -35,7 +42,7 @@ This file will simulate a random source tree called Example_source in a folder c
 
 ```bash
 #!/bin/bash
-##filenames
+##define the filenames:
 file_prefix="Example_trees"
 source_tree_prefix="Example_source" # data filename
 folder_name="./Example_folder/"
@@ -53,7 +60,7 @@ args=(
 	$distances_filename # output file for the geodesic distances of the simulated trees to the source        
 	$source_tree_topology_filename #file to store the topology of the source tree
 	"5" # number of taxa
-	"5" # number  of taxa in the trees
+	"50" # number  of trees to simulate in the data set
 	"947" # seed for the random engine
 	"100" # number of steps in the random walk
 	"2.0" # shape of the gamma distribution for simulating source tree edges
@@ -64,13 +71,54 @@ args=(
 java -cp "./dist/BridgingInTreeSpace.jar" simulateTops/simulateSourceTree "${args[@]}"
 ```
 
+
+A minimal R script to perform initial analysis of the data set is given in the following. This includes plotting the Robinson Foulds and geodesic distances from the source tree to the data points to understand the dispersion in the data set.
+
+```R
+
+##initial analysis of the data set:
+print("spread of the data over the topologies")
+folder <- "./Example_folder"
+data_file_prefix <- "Example_Trees"
+data_filename<-paste0(folder,"/",data_file_prefix,".txt",sep="")
+tops_filename<-paste0(folder,"/", data_file_prefix,"_tops.txt")
+distances_filename<-paste0(folder,"/", data_file_prefix,"_distances_to_source.txt")
+data_filename
+
+Ntaxa<-5
+
+topsData<-read.delim(tops_filename,sep=" ",header=FALSE)
+colnames(topsData)<-c("Topology")
+topsData<-topsData %>%count(Topology)
+colnames(topsData)<-c("Topology","Count")
+
+##plot counts of each topology in the data set
+ggplot(topsData)+geom_col(aes(x=Topology,y=Count))+scale_x_discrete(limits=topsData$Topology) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+print("Distribution of Robinson-Foulds distances from data to source tree")
+RFDData<-read.delim(distances_filename,sep=" ",header=TRUE)
+RFPlotPt<-ggplot(RFDData)+geom_bar(aes(x=RobinsonFouldsDist)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+ggtitle("Robinson Foulds distances")+
+  xlab("Robinson Foulds Distance")+ylab("Count")+theme(legend.position="none",plot.title = element_text(size=11,hjust=0.5),
+                                                       axis.title=element_text(size=8.5),axis.text=element_text(size=7.5))+scale_x_continuous(breaks = seq(0, (2*(Ntaxa-3)), by = 2))
+RFPlotPt
+
+print("Distribution of Geodesic distances from data to source tree")
+GDData<-read.delim(distances_filename,sep=" ",header=TRUE)
+GDPlotPt<-ggplot(RFDData)+geom_bar(aes(x=GeodesicDist)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+ggtitle("Geodesic distances")+
+  xlab("Geodesic Distance")+ylab("Count")+theme(legend.position="none",plot.title = element_text(size=11,hjust=0.5),
+                                                       axis.title=element_text(size=8.5),axis.text=element_text(size=7.5))
+
+GDPlotPt
+
+```
+
 </details>
 
 
 ### Posterior inference using bridges
 <details>
 <summary>⭐ show/hide</summary>
-Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, withina folder called Example_folder, posterior inference can be run using a .sh script in the following form, where the parameters followed by a comment can be modifed as required:
+Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder, posterior inference can be run using a .sh script in the following form, where the parameters followed by a comment can be modifed as required. The script will count the topologies in the posterior at various points in order to plot the cumulative proportions of the different topologies. It will also output the edge split lengths in the modal topology in the posterior which are used to calculate modal trees and plot kernel density estimates to understand the uncertainty in the posterior for the source tree.
 
 ```bash
 #!/bin/bash
@@ -97,19 +145,19 @@ java -cp "./dist/BridgingInTreeSpace.jar" simulateTops/FrechetMeanMainClass "${a
 args=(
 	$data_filename #data_filename
 	"closest" #INITIAL TREE: write "random" for random tree from the modal topology or "closest" for closest data point to Frechet mean
-	"0" # Initial squ root t_0 - set to zero if you want to use the Frechet variance
+	"0" # Initial squ root t_0 - set to zero if you want to use the Frechet variance (recommended)
 	"50" # Num steps
 	"1051" # Seed
 	"-n" #
-	"5000" # Num interations
+	"500000" # Num interations
 	"-t"
 	"10" # thin
 	"-b"
-	"5000" #burnin
+	"50000" #burnin
 	"-o"
 	$output_filename #output file
 	"-pbg"
-	"0.08" #parameter for partial bridge proposal
+	"0.1" #parameter for partial bridge proposal
 	"-ptr"
 	"0.1" # parameter for t0 random walk poposal
 	"-pxg"
@@ -138,7 +186,146 @@ java -cp "./dist/BridgingInTreeSpace.jar" topologies/edgeLengthsModalTop "${args
 
 ```
 
-If you have built the mode tree using R you will have outputted a list of splits with their lengths. We can turn this into a phylogenetic tree in Newick string form using the following shell script:
+Methods to plot, summarise and assess the output of the MCMC runs are given in the following R script. This includes printing the various acceptance rates for MCMC proposals, trace plots and a plot of cumulative proportions of topologies in the posterior to assess convergence, and kernel density estimates of edge lengths in the modal topology in the posterior.
+
+<details>
+<summary>⭐ show/hide</summary>
+
+```R
+##plot counts of each topology in the data set
+ggplot(topsData)+geom_col(aes(x=Topology,y=Count))+scale_x_discrete(limits=topsData$Topology) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+print("Distribution of Robinson-Foulds distances from data to source tree")
+RFDData<-read.delim(distances_filename,sep=" ",header=TRUE)
+RFPlotPt<-ggplot(RFDData)+geom_bar(aes(x=RobinsonFouldsDist)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+ggtitle("Robinson Foulds distances")+
+  xlab("Robinson Foulds Distance")+ylab("Count")+theme(legend.position="none",plot.title = element_text(size=11,hjust=0.5),
+                                                       axis.title=element_text(size=8.5),axis.text=element_text(size=7.5))+scale_x_continuous(breaks = seq(0, (2*(Ntaxa-3)), by = 2))
+RFPlotPt
+
+print("Distribution of Geodesic distances from data to source tree")
+GDData<-read.delim(distances_filename,sep=" ",header=TRUE)
+GDPlotPt<-ggplot(RFDData)+geom_bar(aes(x=GeodesicDist)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+ggtitle("Geodesic distances")+
+  xlab("Geodesic Distance")+ylab("Count")+theme(legend.position="none",plot.title = element_text(size=11,hjust=0.5),
+                                                       axis.title=element_text(size=8.5),axis.text=element_text(size=7.5))
+
+GDPlotPt
+
+##Process output of inference:
+MCMCoutput_filename<-paste0(folder,"/", data_file_prefix,"_MCMCOutput.txt")
+trueT0<-0.25 #obviously only use this if this is simulated data where you know the truth
+
+#Read in the data and get the acceptance rates:
+x0Data<-read.delim(MCMCoutput_filename,sep=" ")
+x0AcceptanceRate<-x0Data[length(x0Data$source),2]
+bridgeAcceptanceRates<-x0Data[!is.na(as.numeric(x0Data$source)),]
+Its<-400 ##in this instance after thinning
+thin<-1
+x0Data<-x0Data[1:Its,]
+x0Data$dispersion<-as.numeric(x0Data$dispersion)
+
+
+##t0 plots:
+t0TracePlotPt01<-ggplot(x0Data)+geom_line(aes(y=dispersion,x=(c(1:Its)*thin), size=0.5)+
+  xlab("Iteration")+ylab("Dispersion")+theme(legend.position="none",plot.title = element_text(size=22,hjust=0.5),
+                                             axis.title=element_text(size=21),axis.text=element_text(size=16.5),axis.title.y = element_text(margin = margin(r=10)))+xlim(c(0,(Its*100+300000))))+
+  ggtitle("Traceplot for dispersion")
+
+t0KDEPlotPt01<-ggplot(x0Data)+geom_density(aes(dispersion))+geom_vline(aes(xintercept=trueT0Pt01))+ggtitle("Kernel density estimate for dispersion")+
+  xlab("Dispersion")+ylab("Density")+theme(legend.position="none",plot.title = element_text(size=11,hjust=0.5),
+                                           axis.title=element_text(size=8.5),axis.text=element_text(size=7.5))##t0KDE
+
+t0KDEPlotPt01
+
+t0AcceptanceRate<-bridgeAcceptanceRates$source[length(bridgeAcceptanceRates$source)]
+averageBridgeAcceptanceRate<-mean(as.numeric(bridgeAcceptanceRates$source[1:(length(bridgeAcceptanceRates$source)-1)]))
+
+print(paste("x0 acceptance rate ",x0AcceptanceRate))
+print(paste("t0 acceptance rate ",t0AcceptanceRate))
+print(paste("average bridge acceptance rate ",averageBridgeAcceptanceRate))
+
+##make a table of the acceptance rates
+acceptanceRates<-data.frame(c("x0","t0","bridges"),c(x0AcceptanceRate,t0AcceptanceRate,averageBridgeAcceptanceRate))
+colnames(acceptanceRates)<-c("Parameter","Rate")
+acceptanceRates
+
+
+x0Data<-NULL
+
+##now we plot cumulative proportion of each topology in the posterior in order to assess quality of the MCMC ouput:
+
+props_filename<-paste0(folder,"/", data_file_prefix,"_MCMCOutput_tops.txt")
+theProps<-read.delim(props_filename,sep=" ")
+theProps<-subset(theProps,select=-c(X))
+
+its<-Its/100 ##topologies are counted at every 100 points in the posterior sample
+
+theCols<-colnames(theProps)
+theCols<-theCols[-(1)]
+
+for(i in 1:length(theCols))
+{
+  aColname<- theCols[i]
+  theProps[[aColname]]=theProps[[aColname]]/sum(theProps[[aColname]])
+}
+
+theProps<-theProps[,c(1,(its+2)-seq(0:(its-1)))]
+
+##change this so it finds the name of the last column itself
+theProps<-theProps[order(theProps[[paste0("X",Its*thin,sep="")]],decreasing=TRUE),]
+PropsToPlot<-transpose(theProps)
+tmydf = setNames(data.frame(t(theProps[,-1])), theProps[,1])
+tmydf<-melt(data.table(tmydf))
+colnames(tmydf)<-c("topology","proportion")
+tmydf[, Iteration := rep(c(1:its), length.out = .N)]
+
+print("Plot the proportion of the top topologies in the posterior:")
+TopPropPlotPt<-ggplot(tmydf)+geom_line(aes(x=Iteration*10^4,y=proportion,group=topology))+ggtitle("$t_0=0.01$")+
+  xlab("Iteration")+ylab("Proportion")+theme(legend.position="none",plot.title = element_text(size=11,hjust=0.5),
+                                             axis.title=element_text(size=8.5),axis.text=element_text(size=7.5))
+
+
+##now plot kernel density estimates for the edge lengths in the modal topology in the MCMC output
+# I have excluded the code to plot the true edge lengths because these example scripts will likely be run on experimental 
+# rather than simulated data
+edge_filename<-paste0(folder,"/", data_file_prefix,"_MCMCOutput_edges.txt")
+
+theDensity1<-read.delim(edge_filename,sep=" ")
+
+#extract the different splits from the header:
+theSplits<-head(read.delim(edgeFilename,header=FALSE,sep="]"),1)
+theSplits[1]<-substr(theSplits[1],3,str_length(theSplits[1]))
+theSplits<-paste0(theSplits,"]")
+theSplits<-head(theSplits,length(theSplits)-1)
+
+nPrime=Ntaxa-3
+theDensity1<-theDensity1[]
+colnames(theDensity1)<-theSplits##need a better way of doing this...
+theDensity1<-theDensity1[,1:nPrime]
+theDensity1<-theDensity1[apply(theDensity1,1,min)!=0,]
+theDensity <- melt(data.table(theDensity1))
+
+colnames(theDensity)<-c("Split","Length")
+print("Plot kernel density estimates of the edge lengths in the posterior")
+ggplot(theDensity)+geom_density(aes(Length,color=Split))+ggtitle("KDEs of split lengths in the modal topology in the posterior")
+
+##make a table showing the topologies in the posterior sample, highlighting the true source tree topology (modify if there is no "true" source)
+print("Top topologies in the posterior, * denotes source tree topology")
+source_tree_prefix<-"Example_tree"
+source_tree_top<-read.delim(paste0(folder,"/", source_tree_prefix,"_top.txt"),header=FALSE)[1,1]
+
+
+topsInPosterior<-data.table(theProps[,1],theProps[,length(colnames(theProps))])
+colnames(topsInPosterior)<-c("Topology","Proportion")
+topsInPosterior$Topology<-paste(topsInPosterior$Topology,ifelse(topsInPosterior$Topology==sourceTreeTop,"*",""))
+
+
+topsInPosterior$Proportion<-paste(round(100*as.numeric(topsInPosterior$Proportion), 1), "%", sep="")
+print(topsInPosterior)
+```
+
+</details>
+
+If you have built the mode tree using R you will have outputted a list of splits with their lengths. We can turn this into a phylogenetic tree in Newick string form using the following shell script. The tree can then be used for example as an alternative to the Frechet mean.
 
 ```bash
 #!/bin/bash
@@ -181,17 +368,17 @@ args=(
         "50" # Num steps
         "1260" # Seed
         "-n" #
-        "10000" # Num MCMC interations - before thin
+        "100000" # Num MCMC interations - before thin
         "-t" #
         "100" # thin
         "-b" #
-        "1000" # burn-in
+        "10000" # burn-in
         "-o" # 
         $posterior_filename # output file for the posterior
         "-pbg" # 
         "0.05" # partial bridge proposal parameter
         "-numProps" # 
-        "500" # Num independence proposals to run
+        "5000" # Num independence proposals to run
         $props_filename # output file for the proposals
         )
         
@@ -233,17 +420,17 @@ args=(
         "50" # Num steps in the bridges
         "1802" # Set the seed for the random number generator
         "-n" # 
-        "1000" # Num interations - before thin
+        "10000" # Num interations - before thin
         "-t" # 
         "20" # thin
         "-b" # 
-        "1000" # burn-in
+        "10000" # burn-in
         "-o" # 
         $posterior_filename #posterior output files 
         "-pbg" # 
         "0.05" # geometric length bridge prop
-        "200" # number of Proposals to run
-        "0.01" # the first non zero value of beta_k
+        "2000" # number of Proposals to run
+        "0.01" # the first non zero value of beta_k (keep this fixed at 0.01)
         ) 
         
 
@@ -262,7 +449,9 @@ java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodCalculations/StepSto
 
 <details>
 <summary>⭐ show/hide</summary>
-Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder, to estimate the marginal likelihood using the Chib one block and tunnel (bridge) methods where the dispersion is considered an unknown nuisance parameter and a fixed source tree is given in the file Example_source.txt, a .sh script of the form specified below can be run. Parameters followed by a comment can be modifed as required.
+Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder, to estimate the marginal likelihood using the Chib one block and tunnel (bridge) methods where the dispersion is considered an unknown nuisance parameter and a fixed source tree is given in the file Example_source.txt, a .sh script of the form specified below can be run. Parameters followed by a comment can be modifed as required. 
+
+To obtain the samples for a Chib one block or tunnel estimate, we first simulate from the posterior distribution (on bridges and t0). We use the marginal posterior sample for t0 to parametrise a reference distribution. We then estimate the normalising constant of the reference distribution by directly simulating independence proposals and finally simulate from the reference distribution using MCMC. The following shell script allows different parameters for the two different MCMC runs in case the acceptance rates differ significantly between the two distributions.
 
 ```bash
 #!/bin/bash
@@ -274,7 +463,7 @@ Given a set of unrooted phylogenetic trees in Newick string format in a file cal
  source_tree_filename="${folder_name}${source_tree_filename}" # x0 filename
  posterior_filename="${folder_name}${file_prefix}_Chib_Post.txt" # output filename for the samples from the posterior
  ref_dist_filename="${folder_name}${file_prefix}_Chib_Props.txt" # output filename for the samples from the reference distribution 
- ref_dist_parameters_filename="${folder_name}${file_prefix}_Chib_Ref_Dist_Params.txt"
+ ref_dist_parameters_filename="${folder_name}${file_prefix}_Chib_Ref_Dist_Params.txt" # file to store the parameters of the lognormal reference distribution on t0
  additional_ref_dist_filename="${folder_name}${file_prefix}_Chib_Additional_Disp.txt" # output filename for the additional file for evaluating the density of the reference distribution for dispersion
  prop_simple_filename="${folder_name}${file_prefix}_Chib_Prop_Simple.txt" # output filename for estimating the normalising constant of the reference distribution
 echo $source_tree_filename	
@@ -286,37 +475,37 @@ args=(
         "50" # Num steps
         "1260" # Seed
         "-n" #
-        "10000" # Num MCMC interations - before thin
+        "100000" # Num MCMC interations - before thin
         "-t" #
         "10" # thin
         "-b" #
-        "1000" # burn-in
+        "10000" # burn-in
         "-o" # 
         $posterior_filename # output file for the posterior
         "-pbg" # 
         "0.05" # partial bridge proposal parameter
-	"-ptr"
-	"0.5" # dispersion log random walk proposal parameter
+	    "-ptr"
+	    "0.5" # dispersion log random walk proposal parameter
         "-prd" 
         "1" # whether to parametrise the lognormal reference distribution for t0: 1 for yes 0 for no -- advisable to do so
         $ref_dist_parameters_filename # file to store the parameters of the t0 reference distribution in
         $additional_ref_dist_filename # file to store the new t0 densities (for the reference dist) in 
-	"897" # Seed - ref dist MCMC sims
+	    "897" # Seed - ref dist MCMC sims
         "-n"
-        "10000" # Num interations - before thin - ref dist MCMC sims
+        "100000" # Num interations - before thin - ref dist MCMC sims
         "-t"
         "20" # thin - ref dist MCMC sims
         "-b"
-        "1000" # burnin - ref dist MCMC sims
+        "10000" # burnin - ref dist MCMC sims
         "-o"
         $ref_dist_filename # output filename for simple indep props via MCMC
         "-pbg"
         "0.01" # geometric length partial bridge proposal parameter
         "-ptr" 
         "0.5" # dispersion log random walk proposal parameter
-	$prop_simple_filename # Output file name for estimating normalizing constant of the reference distribution
-        "20" # number of values of dispersion to use in the numerical integration
-        "50" # number of proposals per data point per value of dispersion
+	    $prop_simple_filename # Output file name for estimating normalizing constant of the reference distribution
+        "200" # number of values of dispersion to use in the numerical integration
+        "1000" # number of proposals per data point per value of dispersion
         )
         
 java -cp "./dist/BridgingInTreeSpace.jar" MarginalLikelihoodsWithDisp/TunnelSamplingDisp "${args[@]}"
@@ -343,7 +532,9 @@ java -cp "./dist/BridgingInTreeSpace.jar" MarginaLikelihoodCalculationsWithDisp/
 
 <details>
 <summary>⭐ show/hide</summary>
-Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder, to estimate the marginal likelihood using the stepping stone method where the dispesion is consider an unknown nuisance parameter and a fixed source tree is given in the file Example_source.txt, a .sh script of the form specified below can be run. Parameters followed by a comment can be modifed as required.
+Given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder, to estimate the marginal likelihood using the stepping stone method where the dispersion is considered an unknown nuisance parameter and a fixed source tree is given in the file Example_source.txt, a .sh script of the form specified below can be run. Parameters followed by a comment can be modifed as required. 
+
+In order to parametrise a reference distribution for t0, we first simulate from the posterior distribution on bridges and dispersion. We then loop through different distributions on the geometric path between the reference distribution and the posterior.
 
 ```bash
 #!/bin/bash
@@ -373,25 +564,25 @@ args=(
         $posterior_filename #posterior output files  - short initial posterior run
         "-pbg" # 
         "0.05" # geometric length bridge prop - short initial posterior run
-	"-ptr" #
+	    "-ptr" #
         "0.5" # log random walk proposal parameter - short initial posterior run
-	$ref_dist_filename # Output file for calculatating normalising constant of the reference distribution
-	"20" # num of values of dispersion to use in numerical integration for reference dist
+	    $ref_dist_filename # Output file for calculatating normalising constant of the reference distribution
+	    "20" # num of values of dispersion to use in numerical integration for reference dist
         "50" # num of proopsals to calculate the normalising constant of the reference distribution
-	"FV" # write FV to use the Frechet variance about x0 or otherwise specidy a number -- recommended to use FV - stepping stone run
-	"490" # Seed - stepping stone run
-	"-n" #  
-	"100" # Num interations - before thin - stepping stone run
-	"-t" # 
-	"2" # thin - stepping stone run
-	"-b" # 
-	"1000" # burn-in - stepping stone run
-	"-o" # # output file name for the MCMC outputs from each step on the path
-	$stepping_dist_filename # 
-	"-pbg" # 
-	"0.01" # geometric length bridge prop - stepping stone run
-	"-ptr" # 
-	"0.5" # t0 random walk proposal - stepping stone run
+		"FV" # write FV to use the Frechet variance about x0 or otherwise specidy a number -- recommended to use FV - stepping stone run
+		"490" # Seed - stepping stone run
+		"-n" #  
+		"100" # Num interations - before thin - stepping stone run
+		"-t" # 
+		"2" # thin - stepping stone run
+		"-b" # 
+		"1000" # burn-in - stepping stone run
+		"-o" # # output file name for the MCMC outputs from each step on the path
+		$stepping_dist_filename # 
+		"-pbg" # 
+		"0.01" # geometric length bridge prop - stepping stone run
+		"-ptr" # 
+		"0.5" # t0 random walk proposal - stepping stone run
         ) 
         	
  
@@ -482,7 +673,7 @@ java -cp "./dist/BridgingInTreeSpace.jar" MarginaLikelihoodCalculationsWithDisp/
 <details>
 <summary>⭐ show/hide</summary>
 
-Suppose we are given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder. To run the noisy MCMC algorithm for inferring the species tree when gene trees are modelled as draws from a Brownian motion kernel (approximated by a random walk kernel), run a .sh script of the following form (note that in this analysis we manually input an initial tree):
+Suppose we are given a set of unrooted phylogenetic trees in Newick string format in a file called Example_trees.txt, within a folder called Example_folder. To run the noisy MCMC algorithm for inferring the species tree when gene trees are modelled as draws from a Brownian motion kernel (approximated by a random walk kernel), run a .sh script of the following form (note that in this analysis we manually input an initial tree). The MCMC is noisy because the likelihood is approximated by forward simulating a number of random walks. The accuracy in the approximation of the likelihood can be modified by increasing the number of forward simulated particles. This methodology is highly parallelisable and can be done parallelised by changing the number of cores used to forward simulate particles.
 
 ```bash
 #!/bin/bash
@@ -503,7 +694,7 @@ args=(
 	$topologies_filename # a file to count the topologies in the MCMC output into
 	"1" # Initial sql root t_0 
 	"50" # Num steps in the random walks
-        "1000" # Number of particles in the approx likelihood calcs
+	"1000" # Number of particles in the approx likelihood calcs
 	"1" # Number of cores to use in forward simulating particles
 	"1500" # Num interations
 	"0" #burnin
@@ -519,10 +710,12 @@ java -cp "./dist/BridgingInTreeSpace.jar" topologies/InferParamsViaApproxLike "$
 
 </details>
 
-### Simulating from the Gaussian kernel distribution using MCMC
-<details>
-<summary>⭐ show/hide</summary>
-Given an unrooted phylogenetic tree in Newick string format in a file called Example_tree.txt, within a folder called Example_folder, we can simulate from a Gaussian kernel, as in the paper [kdetrees: non-parametric estimation of phylogenetic tree distributions](https://academic.oup.com/bioinformatics/article/30/16/2280/2748204) a .sh script in the following form, where the parameters followed by a comment can be modifed as required:
+### Simulating from the Gaussian kernel distribution using MCMC 
+Given an unrooted phylogenetic tree in Newick string format in a file called Example_tree.txt, within a folder called Example_folder, we can simulate from the Gaussian kernel from the paper [kdetrees: non-parametric estimation of phylogenetic tree distributions](https://academic.oup.com/bioinformatics/article/30/16/2280/2748204) using Metropolis-Hastings MCMC. The methodolgy is specified in the thesis. We can do this using
+a .sh script in the following form, where the parameters followed by a comment can be modifed as required:
+
+<details> 
+<summary>⭐ show/hide</summary>	
 
 ```bash
 #!/bin/bash
