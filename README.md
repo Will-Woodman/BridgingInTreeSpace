@@ -890,22 +890,21 @@ getTheCounts<-function(data,m,name){
   
 }
 
-#/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/IndepPropTuning/10Taxa20240910/Trees1_Variable_MCMCoutv1.txt
 
 m<-50
 noOfBridges<-4000
 
 ##read in the different data sets and print out the acceptance rates in each MCMC run:
-theData1<-read.delim("/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/IndepPropTuning/10Taxa20240910/Trees1_1TimesPenalty_MCMCoutv1.txt",sep=" ",header=FALSE)
+theData1<-read.delim("/IndepPropTuning/Trees1_1TimesPenalty_MCMCoutv1.txt",sep=" ",header=FALSE)
 print(paste0("Acceptance rate for 1 times penalty: ",theData1[4002,10]))
 
-theData2<-read.delim("/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/IndepPropTuning/10Taxa20240910/Trees1_Variable_MCMCoutv1.txt",sep=" ",header=FALSE)
+theData2<-read.delim("/IndepPropTuning/Trees1_Variable_MCMCoutv1.txt",sep=" ",header=FALSE)
 print(paste0("Acceptance rate for 2 times penalty: ",theData2[4002,10]))
 
-theData3<-read.delim("/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/IndepPropTuning/10Taxa20240910/Trees1_3TimesPenalty_MCMCoutv1.txt",sep=" ",header=FALSE)
+theData3<-read.delim("/IndepPropTuning/Trees1_3TimesPenalty_MCMCoutv1.txt",sep=" ",header=FALSE)
 print(paste0("Acceptance rate for 1 times penalty: ",theData3[4002,10]))
 
-theData4<-read.delim("/Users/will/Documents/Will PhD/Netbeans Projects/TopInf/IndepPropTuning/10Taxa20240910/Trees1_NoPen_MCMCOutput.txt",sep=" ",header=FALSE)
+theData4<-read.delim("/IndepPropTuning/Trees1_NoPen_MCMCOutput.txt",sep=" ",header=FALSE)
 print(paste0("Acceptance rate for no penalty: ",theData4[4002,10]))
 
 ##plot traceplots of the log likelihood for each chain to check that there are no issues with convergence
